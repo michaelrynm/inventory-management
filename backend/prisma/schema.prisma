@@ -21,51 +21,55 @@ model User {
   role      Role     @default(KASIR)
   createdAt DateTime @default(now())
 
-  Sales     Sale[]
+  Sales Sale[]
 }
 
 model Product {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
+  category    String
   price       Float
   stock       Int
   minStock    Int      @default(10)
+  unit        String
   createdAt   DateTime @default(now())
 
-  Sales       SaleDetail[]
+  Sales SaleDetail[]
 }
 
 model Customer {
   id        Int      @id @default(autoincrement())
   name      String
   contact   String?
+  email     String
+  address   String
   createdAt DateTime @default(now())
 
-  Sales     Sale[]
+  Sales Sale[]
 }
 
 model Sale {
-  id          Int          @id @default(autoincrement())
-  date        DateTime     @default(now())
+  id          Int      @id @default(autoincrement())
+  date        DateTime @default(now())
   totalAmount Float
   userId      Int
   customerId  Int?
 
-  user        User         @relation(fields: [userId], references: [id])
-  customer    Customer?    @relation(fields: [customerId], references: [id])
-  details     SaleDetail[]
+  user     User         @relation(fields: [userId], references: [id])
+  customer Customer?    @relation(fields: [customerId], references: [id])
+  details  SaleDetail[]
 }
 
 model SaleDetail {
-  id         Int      @id @default(autoincrement())
-  quantity   Int
-  price      Float
-  productId  Int
-  saleId     Int
+  id        Int   @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  productId Int
+  saleId    Int
 
-  product    Product  @relation(fields: [productId], references: [id])
-  sale       Sale     @relation(fields: [saleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id])
 }
 
 enum Role {
