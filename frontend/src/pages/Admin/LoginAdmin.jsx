@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { LockKeyhole, User } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useState } from "react";
 
-export default function LoginUser() {
+export default function LoginAdmin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -29,14 +29,18 @@ export default function LoginUser() {
           password,
         }
       );
-      if (response.status === 200) {
+      if (response.data.data.role !== "ADMIN") {
+        Swal.fire("Access Denied");
+      }
+      if (response.status === 200 && response.data.data.role === "ADMIN") {
         Swal.fire("Login Berhasil");
         sessionStorage.setItem("token", response.data.token);
         sessionStorage.setItem("userId", response.data.data.id);
-        navigate("/user/transaksi");
+        navigate("/admin/dashboard");
       }
     } catch (error) {
       console.log(error);
+      Swal.fire("Login Gagal");
     }
   };
   return (
@@ -50,7 +54,7 @@ export default function LoginUser() {
               </div>
             </div>
             <CardTitle className="text-2xl text-center font-bold">
-              Login Kasir
+              Login Admin
             </CardTitle>
             <CardDescription className="text-center">
               Masukkan username dan password untuk login ke aplikasi

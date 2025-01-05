@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Home,
   Banknote,
@@ -21,11 +21,34 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
-
+import { Button } from "../ui/button.jsx";
+import axios from "axios";
 export default function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const id = sessionStorage.getItem("userId");
+  const [userData, setUserData] = useState({});
+
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/users/${id}`);
+      setUserData(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, [id]);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("userId");
+    navigate("/");
+  };
 
   const items = [
     {
@@ -57,6 +80,11 @@ export default function AdminSidebar() {
       title: "Notifikasi",
       url: "/admin/notifications",
       icon: Bell,
+    },
+    {
+      title: "Tambah User",
+      url: "/admin/manageuser",
+      icon: Settings,
     },
   ];
 
@@ -124,9 +152,16 @@ export default function AdminSidebar() {
         </SidebarGroup>
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm font-medium text-blue-600">Admin Active</p>
-            <p className="text-xs text-gray-500 mt-1">Administrator</p>
+          <div className="bg-blue-50 rounded-lg p-4 flex justify-between">
+            <div>
+              <p className="text-sm font-medium text-blue-600">Admin Active</p>
+              <p className="text-xs text-gray-500 mt-1">{userData.name}</p>
+            </div>
+            <div>
+              <Button variant="outline" onClick={handleLogout}>
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </SidebarContent>
