@@ -45,28 +45,27 @@ model Customer {
   email     String
   address   String
   createdAt DateTime @default(now())
-
-  Sales Sale[]
 }
 
 model Sale {
-  id          Int      @id @default(autoincrement())
-  date        DateTime @default(now())
-  totalAmount Float
-  userId      Int
-  customerId  Int?
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  customer      String
+  totalAmount   Int?
+  paymentMethod String
+  createdAt     DateTime @default(now())
 
-  user     User         @relation(fields: [userId], references: [id])
-  customer Customer?    @relation(fields: [customerId], references: [id])
-  details  SaleDetail[]
+  user    User         @relation(fields: [userId], references: [id])
+  details SaleDetail[]
 }
 
 model SaleDetail {
-  id        Int   @id @default(autoincrement())
-  quantity  Int
-  price     Float
-  productId Int
-  saleId    Int
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  totalPrice Int
+  productId  Int
+  saleId     Int
+  createdAt  DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id])
   sale    Sale    @relation(fields: [saleId], references: [id])
