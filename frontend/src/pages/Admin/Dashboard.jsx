@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -20,6 +20,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import AdminLayout from "@/components/component/AdminLayout.jsx";
+import axios from "axios";
 
 // Dummy data untuk chart penjualan mingguan
 const weeklyData = [
@@ -59,6 +60,40 @@ export default function Dashboard() {
     }).format(value);
   };
 
+  const [dashboardData, setDashboardData] = useState([]);
+  const [lowStockData, setLowStockData] = useState([]);
+
+  useEffect(() => {
+    const fetchLowStockData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/dashboard/low-stock"
+        );
+        setLowStockData(response.data);
+      } catch (error) {
+        console.log("Error fetching low stock data", error);
+      }
+    };
+
+    fetchLowStockData();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/dashboard/summary"
+        );
+        setDashboardData(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <div>
       <AdminLayout>
@@ -89,7 +124,7 @@ export default function Dashboard() {
                       Total Penjualan Hari Ini
                     </p>
                     <h3 className="text-2xl font-bold">
-                      {formatCurrency(3500000)}
+                      {formatCurrency(dashboardData.totalRevenue)}
                     </h3>
                   </div>
                 </div>
@@ -106,7 +141,9 @@ export default function Dashboard() {
                     <p className="text-sm font-medium text-gray-500">
                       Total Pelanggan
                     </p>
-                    <h3 className="text-2xl font-bold">256</h3>
+                    <h3 className="text-2xl font-bold">
+                      {dashboardData.totalCustomer}
+                    </h3>
                   </div>
                 </div>
               </CardContent>
@@ -122,7 +159,9 @@ export default function Dashboard() {
                     <p className="text-sm font-medium text-gray-500">
                       Total Produk
                     </p>
-                    <h3 className="text-2xl font-bold">1,459</h3>
+                    <h3 className="text-2xl font-bold">
+                      {dashboardData.totalProducts}
+                    </h3>
                   </div>
                 </div>
               </CardContent>
@@ -138,7 +177,9 @@ export default function Dashboard() {
                     <p className="text-sm font-medium text-gray-500">
                       Stok Menipis
                     </p>
-                    <h3 className="text-2xl font-bold">12</h3>
+                    <h3 className="text-2xl font-bold">
+                      {dashboardData.lowStockProducts}
+                    </h3>
                   </div>
                 </div>
               </CardContent>
@@ -223,13 +264,13 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {lowStockProducts.map((product, index) => (
+                    {lowStockData.map((product, index) => (
                       <tr key={index} className="bg-white border-b">
                         <td className="px-6 py-4 font-medium">
                           {product.name}
                         </td>
                         <td className="px-6 py-4">{product.stock}</td>
-                        <td className="px-6 py-4">{product.minimum}</td>
+                        <td className="px-6 py-4">{product.minStock}</td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded-full">
                             Stok Menipis
