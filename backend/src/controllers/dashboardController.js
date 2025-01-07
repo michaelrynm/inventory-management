@@ -14,21 +14,16 @@ exports.getSummary = async (req, res) => {
 			},
 		});
 
+		const totalCustomer = await prisma.sale.count();
+
 		const todayRevenue = todaySaleData.reduce(
 			(sum, record) => sum + record.totalAmount,
 			0
 		);
 
-		const countStock = await prisma.product.aggregate({
-			_sum: {
-				stock: true,
-			},
-			where: {
-				stock: { not: 0 },
-			},
-		});
+		const countStock = await prisma.product.count();
 
-		const totalProducts = countStock._sum.stock;
+		const totalProducts = countStock;
 
 		const products = await prisma.product.findMany();
 
@@ -38,7 +33,7 @@ exports.getSummary = async (req, res) => {
 
 		return res.status(200).json({
 			todayRevenue,
-			totalCustomer: todaySaleData.length,
+			totalCustomer,
 			totalProducts,
 			lowStockProducts: lowStockProducts.length,
 		});

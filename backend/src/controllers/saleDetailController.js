@@ -51,10 +51,10 @@ exports.deleteSaleDetail = async (req, res) => {
 //to get add products before submitting saleDetail
 exports.getSaleDetail = async (req, res) => {
 	try {
-		const { saleId } = req.params;
+		const { saleId } = req.body;
 
 		const saleDetails = await prisma.saleDetail.findMany({
-			where: { saleId: parseInt(saleId) },
+			where: { saleId: saleId },
 			include: { product: 1 },
 		});
 

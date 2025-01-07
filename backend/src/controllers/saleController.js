@@ -14,8 +14,9 @@ exports.getAll = async (req, res) => {
 //get filtered sales data by user id
 exports.getUserSale = async (req, res) => {
 	try {
+		const { userId } = req.body;
 		const sales = await prisma.sale.findMany({
-			where: { userId: parseInt(req.params.userId) },
+			where: { userId },
 		});
 
 		return res.status(200).json(sales);
@@ -27,13 +28,13 @@ exports.getUserSale = async (req, res) => {
 //create a new sale data before adding sale details data
 exports.create = async (req, res) => {
 	try {
-		const { customer, paymentMethod } = req.body;
+		const { userId, customer, paymentMethod } = req.body;
 
 		const newSale = await prisma.sale.create({
 			data: {
-				userId: parseInt(req.params.userId),
-				customer: customer,
-				paymentMethod: paymentMethod,
+				userId,
+				customer,
+				paymentMethod,
 			},
 		});
 		return res.status(201).json(newSale);
