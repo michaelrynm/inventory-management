@@ -1,46 +1,53 @@
 import UserLayout from "@/components/component/UserLayout.jsx";
 import { Button } from "@/components/ui/button";
-import React, { useState } from "react";
-import dummyTransactions from "@/lib/data.js";
+import React, { useEffect, useState } from "react";
 import Table from "@/components/component/Table.jsx";
-import { FileText, Search, BarChart2, Download } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { FileText, BarChart2 } from "lucide-react";
+import axios from "axios";
+import TransactionDetailModal from "./DetailTransactionModal.jsx";
 
 export default function DataTransaksi() {
+  const id = sessionStorage.getItem("userId");
+  const [dataTransaksi, setDataTransaksi] = useState([]);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const columns = React.useMemo(
     () => [
       {
-        header: "No Nota",
-        accessorKey: "nota",
+        header: "ID",
+        accessorKey: "id",
         cell: ({ row }) => (
-          <span className="font-medium text-blue-600">{row.original.nota}</span>
+          <span className="font-medium text-blue-600">{row.original.id}</span>
         ),
       },
       {
         header: "Nama Pelanggan",
-        accessorKey: "customer_name",
+        accessorKey: "customer",
         cell: ({ row }) => (
-          <div className="font-medium">{row.original.customer_name}</div>
+          <div className="font-medium">{row.original.customer}</div>
         ),
       },
       {
-        header: "Kasir",
-        accessorKey: "cashier_name",
-      },
-      {
         header: "Tanggal",
-        accessorKey: "date",
+        accessorKey: "createdAt",
         cell: ({ row }) => (
-          <span className="text-gray-600">{row.original.date}</span>
+          <span className="text-gray-600">
+            {new Date(row.original.createdAt).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
         ),
       },
       {
         header: "Metode Pembayaran",
-        accessorKey: "payment_method",
+        accessorKey: "paymentMethod",
         cell: ({ row }) => {
           const method =
-            row.original.payment_method.charAt(0).toUpperCase() +
-            row.original.payment_method.slice(1);
+            row.original.paymentMethod.charAt(0).toUpperCase() +
+            row.original.paymentMethod.slice(1).toLowerCase();
           return (
             <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
               {method}
@@ -49,20 +56,11 @@ export default function DataTransaksi() {
         },
       },
       {
-        header: "Subtotal",
-        accessorKey: "subtotal",
-        cell: ({ row }) => (
-          <span className="font-medium">
-            Rp {row.original.subtotal.toLocaleString()}
-          </span>
-        ),
-      },
-      {
         header: "Total",
-        accessorKey: "total",
+        accessorKey: "totalAmount",
         cell: ({ row }) => (
           <span className="font-semibold text-blue-700">
-            Rp {row.original.total.toLocaleString()}
+            Rp {row.original.totalAmount?.toLocaleString() ?? "0"}
           </span>
         ),
       },
@@ -84,6 +82,27 @@ export default function DataTransaksi() {
     []
   );
 
+  useEffect(() => {
+    const fetchTransactionData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/sales/user/${id}`
+        );
+        setDataTransaksi(response.data);
+      } catch (error) {
+        console.error("Error fetching transaction data:", error);
+      }
+    };
+    fetchTransactionData();
+  }, []); // Removed dataTransaksi from dependency array to prevent infinite loop
+
+  const handleViewDetail = (transaction) => {
+    // Implement your detail view logic herea
+    console.log("Viewing detail for transaction:", transaction);
+    setSelectedTransaction(transaction); // Set data transaksi yang dipilih
+    setIsModalOpen(true);
+  };
+
   return (
     <div>
       <UserLayout>
@@ -99,8 +118,13 @@ export default function DataTransaksi() {
         </div>
 
         <div className="bg-white mt-5 p-8 min-h-screen rounded-xl shadow-lg">
-          <Table data={dummyTransactions} columns={columns} />
+          <Table data={dataTransaksi} columns={columns} />
         </div>
+        <TransactionDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          transaction={selectedTransaction}
+        />
       </UserLayout>
     </div>
   );

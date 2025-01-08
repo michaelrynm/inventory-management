@@ -3,18 +3,17 @@ const prisma = require("../prisma/client.js");
 //to get all data for admin
 exports.getAll = async (req, res) => {
   try {
-    console.log("sales");
     const sales = await prisma.sale.findMany({
       include: {
         user: {
-          name: true,
+          select: {
+            name: true,
+          },
         },
       },
     });
-    console.log(error);
     return res.status(200).json(sales);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: error.message });
   }
 };
@@ -28,6 +27,9 @@ exports.getUserSale = async (req, res) => {
     const sales = await prisma.sale.findMany({
       where: {
         userId: parseInt(id),
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -48,7 +50,7 @@ exports.create = async (req, res) => {
 
     const newSale = await prisma.sale.create({
       data: {
-        userId,
+        userId: parseInt(userId),
         customer,
         paymentMethod,
       },

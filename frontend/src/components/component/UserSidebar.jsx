@@ -36,8 +36,7 @@ export default function UserSidebar() {
   }, [id]);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("userId");
+    sessionStorage.clear();
     Swal.fire("Logout Berhasil");
     navigate("/");
   };
@@ -130,8 +129,10 @@ export default function UserSidebar() {
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="bg-blue-50 rounded-lg p-4 flex justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-600">Kasir Active</p>
-              <p className="text-xs text-gray-500 mt-1">{userData.name}</p>
+              <p className="text-sm font-medium text-blue-600">
+                {userData.name}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Kasir</p>
             </div>
             <div>
               <Button variant="outline" onClick={handleLogout}>

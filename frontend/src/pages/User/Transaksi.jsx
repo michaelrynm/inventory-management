@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserLayout from "@/components/component/UserLayout.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
@@ -21,53 +21,145 @@ import {
   TableRow,
   TableFooter,
 } from "@/components/ui/table";
-import { X, Receipt, ShoppingCart, Printer, Save, RotateCcw } from "lucide-react";
+import {
+  X,
+  Receipt,
+  ShoppingCart,
+  Printer,
+  Save,
+  RotateCcw,
+} from "lucide-react";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function Transaksi() {
-  // State management
+  const [saleId, setSaleId] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [step, setStep] = useState(1);
   const [saleDetails, setSaleDetails] = useState([]);
   const [formData, setFormData] = useState({
     customer: "",
     paymentMethod: "",
-    cashier: "John Doe", // This would come from auth/context in real app
+    cashier: "John Doe",
     date: new Date().toLocaleDateString(),
-    transactionId: "TRX-" + Math.random().toString().slice(2, 11)
+    transactionId: "TRX-" + Math.random().toString().slice(2, 11),
+    userId: sessionStorage.getItem("userId"),
   });
 
-  // Product form state
-  const [selectedProduct, setSelectedProduct] = useState("");
+  const [userData, setUserData] = useState({});
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState("");
 
-  // Dummy data
-  const dummyDataSelect = [
-    "Beras", "Sabun", "Sampo", "Pasta Gigi", "Tissue",
-    "Detergen", "Minyak Goreng", "Gula Pasir", "Kopi",
-    "Teh Celup", "Susu Bubuk", "Kecap Manis", "Saos Sambal",
-    "Telur Ayam", "Margarin", "Keju", "Roti Tawar",
-    "Air Mineral", "Cokelat Bubuk", "Mie Instan"
-  ];
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userId = sessionStorage.getItem("userId");
+        const response = await axios.get(
+          `http://localhost:3000/api/users/${userId}`
+        );
+        setUserData(response.data);
+        console.log(userData);
+      } catch (error) {
+        console.log("Error fetch user Data");
+      }
+    };
+    fetchUserData();
+  }, []);
 
-  // Dummy prices (in real app, this would come from API)
-  const productPrices = {
-    "Beras": 75000,
-    "Sabun": 10000,
-    "Sampo": 25000,
-    // ... add prices for all products
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/products");
+        console.log("response api.", response.data);
+        setProducts(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch products");
+        setLoading(false);
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const fetchSaleDetails = async () => {
+      if (!saleId) return;
+
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/sale-details/${saleId}`
+        );
+        setSaleDetails(
+          response.data.map((detail) => ({
+            id: detail.id,
+            product_name: detail.name,
+            quantity: detail.quantity,
+            price_per_unit: detail.price,
+            total_price: detail.totalPrice,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching sale details:", error);
+        setError("Failed to fetch sale details");
+      }
+    };
+
+    fetchSaleDetails();
+  }, [saleId]);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    if (selectedProduct && quantity && saleId) {
+      try {
+        const response = await axios.post(
+          "http://localhost:3000/api/sale-details",
+          {
+            saleId: parseInt(saleId),
+            productId: parseInt(selectedProduct.id),
+            quantity: parseInt(quantity),
+          }
+        );
+
+        if (response.status === 201) {
+          const updatedDetailsResponse = await axios.get(
+            `http://localhost:3000/api/sale-details/${saleId}`
+          );
+
+          setSaleDetails(
+            updatedDetailsResponse.data.map((detail) => ({
+              id: detail.id,
+              product_name: detail.name,
+              quantity: detail.quantity,
+              price_per_unit: detail.price,
+              total_price: detail.totalPrice,
+            }))
+          );
+
+          resetProductForm();
+        }
+      } catch (error) {
+        console.error("Error adding product:", error);
+        alert("Failed to add product. Please try again.");
+      }
+    }
   };
 
-  // Reset functions
   const resetInitialForm = () => {
     setFormData({
       ...formData,
       customer: "",
       paymentMethod: "",
-      transactionId: "TRX-" + Math.random().toString().slice(2, 11)
+      transactionId: "TRX-" + Math.random().toString().slice(2, 11),
     });
   };
 
   const resetProductForm = () => {
-    setSelectedProduct("");
+    setSelectedProduct(null);
     setQuantity("");
   };
 
@@ -78,13 +170,20 @@ export default function Transaksi() {
     setStep(1);
   };
 
-  // Cancel handlers
+  const calculateTotal = () => {
+    return saleDetails.reduce((sum, item) => sum + item.total_price, 0);
+  };
+
   const handleCancelStep1 = () => {
     resetInitialForm();
   };
 
   const handleCancelStep2 = () => {
-    if (window.confirm("Anda yakin ingin kembali? Data produk yang sudah ditambahkan akan hilang.")) {
+    if (
+      window.confirm(
+        "Anda yakin ingin kembali? Data produk yang sudah ditambahkan akan hilang."
+      )
+    ) {
       resetProductForm();
       setSaleDetails([]);
       setStep(1);
@@ -92,52 +191,196 @@ export default function Transaksi() {
   };
 
   const handleCancelTransaction = () => {
-    if (window.confirm("Anda yakin ingin membatalkan transaksi ini? Semua data akan dihapus.")) {
+    if (
+      window.confirm(
+        "Anda yakin ingin membatalkan transaksi ini? Semua data akan dihapus."
+      )
+    ) {
       resetAllData();
     }
   };
 
-  // Handlers
-  const handleInitialSubmit = (e) => {
+  const handleInitialSubmit = async (e) => {
     e.preventDefault();
     if (formData.customer && formData.paymentMethod) {
-      setStep(2);
+      try {
+        const response = await axios.post("http://localhost:3000/api/sales/", {
+          userId: formData.userId,
+          customer: formData.customer,
+          paymentMethod: formData.paymentMethod,
+        });
+
+        if (response.status === 201) {
+          setSaleId(response.data.id);
+          setStep(2);
+        }
+      } catch (error) {
+        console.error("Error creating sale:", error);
+        alert("Failed to create sale. Please try again.");
+      }
     }
   };
 
-  const handleAddProduct = (e) => {
-    e.preventDefault();
-    if (selectedProduct && quantity) {
-      const price = productPrices[selectedProduct] || 10000; // Default price if not found
-      const newProduct = {
-        id: `A${Math.random().toString().slice(2, 6)}`,
-        product_name: selectedProduct,
-        quantity: parseInt(quantity),
-        price_per_unit: price,
-        total_price: price * parseInt(quantity)
-      };
-      
-      setSaleDetails([...saleDetails, newProduct]);
-      resetProductForm();
+  const handleDeleteProduct = async (saleDetailId) => {
+    if (!saleDetailId) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "ID Produk tidak ditemukan",
+      });
+      return;
+    }
+
+    try {
+      // First, confirm with user using SweetAlert2
+      const result = await Swal.fire({
+        title: "Hapus Produk",
+        text: "Apakah Anda yakin ingin menghapus produk ini?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, Hapus!",
+        cancelButtonText: "Batal",
+      });
+
+      // If user confirms the deletion
+      if (result.isConfirmed) {
+        // Show loading state
+        Swal.fire({
+          title: "Menghapus produk...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // Send DELETE request to the API
+        const deleteResponse = await axios.delete(
+          `http://localhost:3000/api/sale-details/${saleDetailId}`
+        );
+
+        if (deleteResponse.status === 200) {
+          // Fetch updated sale details after successful deletion
+          const updatedDetailsResponse = await axios.get(
+            `http://localhost:3000/api/sale-details/${saleId}`
+          );
+
+          // Update the state with new data
+          setSaleDetails(
+            updatedDetailsResponse.data.map((detail) => ({
+              id: detail.id,
+              product_name: detail.name,
+              quantity: detail.quantity,
+              price_per_unit: detail.price,
+              total_price: detail.totalPrice,
+            }))
+          );
+
+          // Show success message
+          Swal.fire({
+            icon: "success",
+            title: "Berhasil",
+            text: "Produk berhasil dihapus",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+
+      let errorMessage = "Terjadi kesalahan saat menghapus produk";
+
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        switch (error.response.status) {
+          case 404:
+            errorMessage = "Data produk tidak ditemukan";
+            break;
+          case 403:
+            errorMessage =
+              "Anda tidak memiliki izin untuk menghapus produk ini";
+            break;
+          default:
+            errorMessage = `Gagal menghapus produk. Status: ${error.response.status}`;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = "Tidak dapat terhubung ke server. Silakan coba lagi.";
+      }
+
+      // Show error message using SweetAlert2
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+      });
     }
   };
 
-  const handleDeleteProduct = (productId) => {
-    setSaleDetails(saleDetails.filter(item => item.id !== productId));
-  };
-
-  const calculateTotal = () => {
-    return saleDetails.reduce((sum, item) => sum + item.total_price, 0);
-  };
-
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
     const finalTransaction = {
       ...formData,
       saleDetails,
-      totalAmount: calculateTotal()
+      totalAmount: calculateTotal(),
     };
+
     console.log("Final transaction data:", finalTransaction);
-    // Here you would typically make an API call to save the transaction
+
+    try {
+      // Kirim data transaksi ke API
+      const response = await axios.put("http://localhost:3000/api/sales/", {
+        saleId: parseInt(saleId),
+      });
+
+      if (response.status === 200) {
+        // Jika transaksi berhasil, tampilkan notifikasi sukses
+        await Swal.fire({
+          icon: "success",
+          title: "Transaksi Berhasil Disimpan",
+          text: "Transaksi telah berhasil disimpan ke database.",
+        });
+
+        // Reset semua data
+        resetAllData();
+      }
+    } catch (error) {
+      // Jika ada kesalahan, tampilkan notifikasi error
+      console.error("Error submitting final transaction:", error);
+
+      let errorMessage = "Terjadi kesalahan saat menyimpan transaksi.";
+
+      if (error.response) {
+        // Error dari server dengan status code
+        switch (error.response.status) {
+          case 400:
+            errorMessage =
+              "Data transaksi tidak valid. Periksa kembali formulir.";
+            break;
+          case 404:
+            errorMessage = "Transaksi tidak ditemukan. Silakan coba lagi.";
+            break;
+          case 500:
+            errorMessage =
+              "Terjadi kesalahan pada server. Silakan coba lagi nanti.";
+            break;
+          default:
+            errorMessage = `Gagal menyimpan transaksi. Status: ${error.response.status}`;
+        }
+      } else if (error.request) {
+        // Tidak ada respons dari server
+        errorMessage = "Tidak dapat terhubung ke server. Periksa koneksi Anda.";
+      }
+
+      // Tampilkan error menggunakan SweetAlert2
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+      });
+    }
   };
 
   return (
@@ -153,6 +396,7 @@ export default function Transaksi() {
               variant="outline"
               onClick={handleCancelTransaction}
               className="text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center gap-2"
+              disabled={step === 1}
             >
               <RotateCcw size={18} />
               Batalkan Transaksi
@@ -179,7 +423,9 @@ export default function Transaksi() {
                   <Input
                     type="text"
                     value={formData.customer}
-                    onChange={(e) => setFormData({...formData, customer: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, customer: e.target.value })
+                    }
                     className="focus:ring-2 focus:ring-blue-100"
                     required
                   />
@@ -188,7 +434,9 @@ export default function Transaksi() {
                   <Label className="text-gray-700">Metode Pembayaran</Label>
                   <Select
                     value={formData.paymentMethod}
-                    onValueChange={(value) => setFormData({...formData, paymentMethod: value})}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, paymentMethod: value })
+                    }
                     required
                   >
                     <SelectTrigger className="focus:ring-2 focus:ring-blue-100">
@@ -204,11 +452,21 @@ export default function Transaksi() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-gray-700">Nama Kasir</Label>
-                  <Input type="text" value={formData.cashier} className="bg-gray-50" disabled />
+                  <Input
+                    type="text"
+                    value={userData.name}
+                    className="bg-gray-50"
+                    disabled
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-gray-700">Tanggal</Label>
-                  <Input type="text" value={formData.date} className="bg-gray-50" disabled />
+                  <Input
+                    type="text"
+                    value={formData.date}
+                    className="bg-gray-50"
+                    disabled
+                  />
                 </div>
               </div>
               <div className="mt-6 flex gap-3">
@@ -233,7 +491,9 @@ export default function Transaksi() {
               <div className="flex justify-between items-center mb-6">
                 <div className="space-y-1">
                   <p className="font-medium">Pelanggan: {formData.customer}</p>
-                  <p className="text-sm text-gray-600">Metode Pembayaran: {formData.paymentMethod}</p>
+                  <p className="text-sm text-gray-600">
+                    Metode Pembayaran: {formData.paymentMethod}
+                  </p>
                 </div>
                 <Button
                   variant="outline"
@@ -244,23 +504,59 @@ export default function Transaksi() {
                 </Button>
               </div>
 
-              <form onSubmit={handleAddProduct} className="bg-gray-50 p-6 rounded-lg border border-gray-100">
+              <form
+                onSubmit={handleAddProduct}
+                className="bg-gray-50 p-6 rounded-lg border border-gray-100"
+              >
                 <div className="grid grid-cols-2 gap-10 items-center">
                   <div className="space-y-2">
                     <Label className="text-gray-700">Produk</Label>
                     <Select
-                      value={selectedProduct}
-                      onValueChange={setSelectedProduct}
+                      value={selectedProduct?.id?.toString() || ""}
+                      onValueChange={(id) => {
+                        if (["loading", "error", "empty"].includes(id)) return;
+
+                        const selected = products.find(
+                          (p) => p.id === parseInt(id)
+                        );
+                        if (selected) {
+                          setSelectedProduct(selected);
+                        } else {
+                          console.error("Produk tidak ditemukan untuk ID:", id);
+                        }
+                      }}
                     >
                       <SelectTrigger className="focus:ring-2 focus:ring-blue-100">
-                        <SelectValue placeholder="Pilih Produk" />
+                        <SelectValue placeholder="Pilih Produk">
+                          {selectedProduct?.name || "Pilih Produk"}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {dummyDataSelect.map((item) => (
-                          <SelectItem key={item} value={item}>
-                            {item}
+                        {loading ? (
+                          <SelectItem value="loading" disabled>
+                            Memuat produk...
                           </SelectItem>
-                        ))}
+                        ) : error ? (
+                          <SelectItem value="error" disabled>
+                            Gagal memuat produk
+                          </SelectItem>
+                        ) : products.length === 0 ? (
+                          <SelectItem value="empty" disabled>
+                            Tidak ada produk tersedia
+                          </SelectItem>
+                        ) : (
+                          products
+                            .filter((product) => product.id && product.name)
+                            .map((product) => (
+                              <SelectItem
+                                key={product.id}
+                                value={product.id.toString()}
+                              >
+                                {product.name} - Rp{" "}
+                                {product.price.toLocaleString("id-ID")}
+                              </SelectItem>
+                            ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -300,13 +596,21 @@ export default function Transaksi() {
                       <TableHead className="w-[150px] font-semibold">
                         Kode Barang
                       </TableHead>
-                      <TableHead className="font-semibold">Nama Barang</TableHead>
-                      <TableHead className="font-semibold">Jumlah Barang</TableHead>
-                      <TableHead className="font-semibold">Harga Satuan</TableHead>
+                      <TableHead className="font-semibold">
+                        Nama Barang
+                      </TableHead>
+                      <TableHead className="font-semibold">
+                        Jumlah Barang
+                      </TableHead>
+                      <TableHead className="font-semibold">
+                        Harga Satuan
+                      </TableHead>
                       <TableHead className="text-right font-semibold">
                         Harga Total
                       </TableHead>
-                      <TableHead className="text-center w-[50px]">Action</TableHead>
+                      <TableHead className="text-center w-[50px]">
+                        Action
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -325,6 +629,7 @@ export default function Transaksi() {
                           <button
                             onClick={() => handleDeleteProduct(item.id)}
                             className="p-1 hover:bg-red-50 rounded-full text-red-500 transition-colors duration-200"
+                            title="Hapus produk"
                           >
                             <X size={16} />
                           </button>
@@ -337,7 +642,10 @@ export default function Transaksi() {
                       <TableCell colSpan={4} className="font-semibold">
                         Total
                       </TableCell>
-                      <TableCell className="text-right font-semibold" colSpan={2}>
+                      <TableCell
+                        className="text-right font-semibold"
+                        colSpan={2}
+                      >
                         Rp {calculateTotal().toLocaleString("id-ID")}
                       </TableCell>
                     </TableRow>

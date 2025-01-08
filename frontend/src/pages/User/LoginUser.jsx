@@ -29,10 +29,12 @@ export default function LoginUser() {
           password,
         }
       );
+      console.log(response.data);
       if (response.status === 200) {
         Swal.fire("Login Berhasil");
         sessionStorage.setItem("token", response.data.token);
         sessionStorage.setItem("userId", response.data.data.id);
+        sessionStorage.setItem("role", response.data.data.role);
         navigate("/user/transaksi");
       }
     } catch (error) {

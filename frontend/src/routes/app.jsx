@@ -3,8 +3,9 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+import AuthGuard from "@/utils/AuthGurad.jsx";
+import RoleGuard from "@/utils/RoleGuard.jsx";
 import Landing from "@/pages/Landing.jsx";
-
 import LoginUser from "@/pages/User/LoginUser.jsx";
 import Transaksi from "@/pages/User/Transaksi.jsx";
 import DataTransaksi from "@/pages/User/DataTransaksi.jsx";
@@ -28,44 +29,100 @@ export default function Router() {
       element: <LoginUser />,
     },
     {
-      path: "/user/Transaksi",
-      element: <Transaksi />,
-    },
-    {
-      path: "/user/DataTransaksi",
-      element: <DataTransaksi />,
-    },
-    {
       path: "/admin/login",
       element: <LoginAdmin />,
     },
+    // Protected User Routes
+    {
+      path: "/user/Transaksi",
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["USER", "ADMIN"]}>
+            <Transaksi />
+          </RoleGuard>
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/user/DataTransaksi",
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["USER", "ADMIN"]}>
+            <DataTransaksi />
+          </RoleGuard>
+        </AuthGuard>
+      ),
+    },
+    // Protected Admin Routes
     {
       path: "/admin/dashboard",
-      element: <Dashboard />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <Dashboard />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "/admin/products",
-      element: <ProductManagement />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <ProductManagement />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "/admin/transactions",
-      element: <TransactionManagement />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <TransactionManagement />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "/admin/customers",
-      element: <CustomerManagement />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <CustomerManagement />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "/admin/reports",
-      element: <ReportPage />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <ReportPage />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "/admin/notifications",
-      element: <NotificationPage />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <NotificationPage />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "/admin/manageuser",
-      element: <ManageUSer />,
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <ManageUSer />
+          </RoleGuard>
+        </AuthGuard>
+      ),
     },
     {
       path: "*",

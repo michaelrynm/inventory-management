@@ -25,6 +25,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "../ui/button.jsx";
 import axios from "axios";
+import Swal from "sweetalert2";
 export default function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -45,8 +46,9 @@ export default function AdminSidebar() {
   }, [id]);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("userId");
+    sessionStorage.clear();
+    Swal.fire("Logout Berhasil");
+
     navigate("/");
   };
 
@@ -66,11 +68,11 @@ export default function AdminSidebar() {
       url: "/admin/transactions",
       icon: Banknote,
     },
-    {
-      title: "Pelanggan",
-      url: "/admin/customers",
-      icon: Users,
-    },
+    // {
+    //   title: "Pelanggan",
+    //   url: "/admin/customers",
+    //   icon: Users,
+    // },
     {
       title: "Laporan",
       url: "/admin/reports",
@@ -154,8 +156,10 @@ export default function AdminSidebar() {
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="bg-blue-50 rounded-lg p-4 flex justify-between">
             <div>
-              <p className="text-sm font-medium text-blue-600">Admin Active</p>
-              <p className="text-xs text-gray-500 mt-1">{userData.name}</p>
+              <p className="text-sm font-medium text-blue-600">
+                {userData.name}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Admin</p>
             </div>
             <div>
               <Button variant="outline" onClick={handleLogout}>

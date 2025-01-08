@@ -36,6 +36,7 @@ export default function LoginAdmin() {
         Swal.fire("Login Berhasil");
         sessionStorage.setItem("token", response.data.token);
         sessionStorage.setItem("userId", response.data.data.id);
+        sessionStorage.setItem("role", response.data.data.role);
         navigate("/admin/dashboard");
       }
     } catch (error) {

@@ -78,7 +78,6 @@ export default function Dashboard() {
     fetchLowStockData();
   }, []);
 
-
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -93,6 +92,8 @@ export default function Dashboard() {
 
     fetchDashboardData();
   }, []);
+
+  console.log("dashboard data", dashboardData)
 
   return (
     <div>
@@ -124,7 +125,7 @@ export default function Dashboard() {
                       Total Penjualan Hari Ini
                     </p>
                     <h3 className="text-2xl font-bold">
-                      {formatCurrency(dashboardData.totalRevenue)}
+                      {formatCurrency(dashboardData.todayRevenue)}
                     </h3>
                   </div>
                 </div>

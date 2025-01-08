@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,63 +17,33 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, FilterX } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { addDays, format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "@radix-ui/react-icons";
+import { Search } from "lucide-react";
+import { format } from "date-fns";
 import AdminLayout from "@/components/component/AdminLayout.jsx";
-
-// Dummy data transaksi
-const initialTransactions = [
-  {
-    id: "TRX001",
-    date: "2024-01-01 10:30:00",
-    kasir: "John Doe",
-    total: 150000,
-    payment: "Cash",
-    status: "completed",
-    customer: "Pelanggan Umum",
-    items: [{ product: "Beras Premium", qty: 2, price: 75000, total: 150000 }],
-  },
-  {
-    id: "TRX002",
-    date: "2024-01-01 11:45:00",
-    kasir: "Jane Smith",
-    total: 85000,
-    payment: "QRIS",
-    status: "completed",
-    customer: "Ahmad",
-    items: [
-      { product: "Minyak Goreng", qty: 1, price: 45000, total: 45000 },
-      { product: "Gula Pasir", qty: 2, price: 20000, total: 40000 },
-    ],
-  },
-];
+import axios from "axios";
 
 export default function TransactionManagement() {
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const [transactions, setTransactions] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [filterKasir, setFilterKasir] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [date, setDate] = useState({
-    from: new Date(2024, 0, 1),
-    to: addDays(new Date(2024, 0, 1), 7),
-  });
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [saleDetails, setSaleDetails] = useState(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/sales/admin"
+        );
+        setTransactions(response.data);
+      } catch (error) {
+        console.log("Error fetching transactions:", error);
+      }
+    };
+    fetchTransactions();
+  }, []);
 
   // Format currency
   const formatCurrency = (value) => {
@@ -92,34 +62,57 @@ export default function TransactionManagement() {
     });
   };
 
-  // Handle search and filters
+  // Apply filters
   const filteredTransactions = transactions.filter((transaction) => {
-    const matchSearch = transaction.id
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    // Filter by search term
+    const matchSearch =
+      transaction.id.toString().includes(searchTerm) ||
+      transaction.customer.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Filter by Kasir
     const matchKasir =
-      filterKasir === "all" ? true : transaction.kasir === filterKasir;
-    const matchStatus =
-      filterStatus === "all" ? true : transaction.status === filterStatus;
-    return matchSearch && matchKasir && matchStatus;
+      filterKasir === "all" || transaction.user.name === filterKasir;
+
+    return matchSearch && matchKasir;
   });
 
+  // Fetch sale details
+  const fetchSaleDetails = async (saleId) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/sale-details/${saleId}`
+      );
+      setSaleDetails(response.data);
+    } catch (error) {
+      console.error("Error fetching sale details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle view detail
-  const handleViewDetail = (transaction) => {
+  const handleViewDetail = async (transaction) => {
     setSelectedTransaction(transaction);
     setIsDetailOpen(true);
+    await fetchSaleDetails(transaction.id);
   };
 
   // Reset filters
   const handleResetFilters = () => {
     setSearchTerm("");
     setFilterKasir("all");
-    setFilterStatus("all");
-    setDate({
-      from: new Date(2024, 0, 1),
-      to: addDays(new Date(2024, 0, 1), 7),
-    });
   };
+
+  // Close detail dialog
+  const handleDialogClose = () => {
+    setIsDetailOpen(false);
+    setSaleDetails(null);
+    setSelectedTransaction(null);
+  };
+
+  // Get unique kasir names for dropdown options
+  const uniqueKasirs = [...new Set(transactions.map((t) => t.user.name))];
 
   return (
     <div>
@@ -127,6 +120,9 @@ export default function TransactionManagement() {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Manajemen Transaksi</h1>
+            <Button onClick={handleResetFilters} variant="outline">
+              Reset Filter
+            </Button>
           </div>
 
           <Card className="mb-6">
@@ -134,83 +130,33 @@ export default function TransactionManagement() {
               <CardTitle>Filter Transaksi</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Search Filter */}
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Cari no. transaksi..."
+                    placeholder="Cari ID atau nama pelanggan..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9"
                   />
                 </div>
 
-                <div className={cn("grid gap-2")}>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          id="date"
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {date?.from ? (
-                            date.to ? (
-                              <>
-                                {format(date.from, "LLL dd, y")} -{" "}
-                                {format(date.to, "LLL dd, y")}
-                              </>
-                            ) : (
-                              format(date.from, "LLL dd, y")
-                            )
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          initialFocus
-                          mode="range"
-                          defaultMonth={date?.from}
-                          selected={date}
-                          onSelect={setDate}
-                          numberOfMonths={2}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                {/* Filter Kasir */}
+                <div>
+                  <select
+                    className="block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200"
+                    value={filterKasir}
+                    onChange={(e) => setFilterKasir(e.target.value)}
+                  >
+                    <option value="all">Semua Kasir</option>
+                    {uniqueKasirs.map((kasir, index) => (
+                      <option key={index} value={kasir}>
+                        {kasir}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <Select value={filterKasir} onValueChange={setFilterKasir}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter Kasir" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Kasir</SelectItem>
-                    <SelectItem value="John Doe">John Doe</SelectItem>
-                    <SelectItem value="Jane Smith">Jane Smith</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status Transaksi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button variant="outline" onClick={handleResetFilters}>
-                  <FilterX className="w-4 h-4 mr-2" />
-                  Reset Filter
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -223,8 +169,8 @@ export default function TransactionManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>No. Transaksi</TableHead>
-                    <TableHead>Tanggal & Waktu</TableHead>
+                    <TableHead>ID Transaksi</TableHead>
+                    <TableHead>Tanggal</TableHead>
                     <TableHead>Kasir</TableHead>
                     <TableHead>Pelanggan</TableHead>
                     <TableHead>Total</TableHead>
@@ -236,25 +182,19 @@ export default function TransactionManagement() {
                 <TableBody>
                   {filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">
-                        {transaction.id}
-                      </TableCell>
-                      <TableCell>{formatDateTime(transaction.date)}</TableCell>
-                      <TableCell>{transaction.kasir}</TableCell>
-                      <TableCell>{transaction.customer}</TableCell>
-                      <TableCell>{formatCurrency(transaction.total)}</TableCell>
-                      <TableCell>{transaction.payment}</TableCell>
+                      <TableCell>{transaction.id}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            transaction.status === "completed"
-                              ? "success"
-                              : transaction.status === "pending"
-                              ? "warning"
-                              : "destructive"
-                          }
-                        >
-                          {transaction.status}
+                        {formatDateTime(transaction.createdAt)}
+                      </TableCell>
+                      <TableCell>{transaction.user.name}</TableCell>
+                      <TableCell>{transaction.customer}</TableCell>
+                      <TableCell>
+                        {formatCurrency(transaction.totalAmount)}
+                      </TableCell>
+                      <TableCell>{transaction.paymentMethod}</TableCell>
+                      <TableCell>
+                        <Badge variant="success" className="bg-green-400">
+                          Completed
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -268,87 +208,104 @@ export default function TransactionManagement() {
                       </TableCell>
                     </TableRow>
                   ))}
+                  {filteredTransactions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center">
+                        Tidak ada data yang sesuai dengan filter
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
 
           {/* Detail Transaction Dialog */}
-          <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+          <Dialog open={isDetailOpen} onOpenChange={handleDialogClose}>
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>
                   Detail Transaksi {selectedTransaction?.id}
                 </DialogTitle>
               </DialogHeader>
-              {selectedTransaction && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Tanggal & Waktu</p>
-                      <p className="font-medium">
-                        {formatDateTime(selectedTransaction.date)}
-                      </p>
+              {isLoading ? (
+                <div className="flex justify-center items-center p-4">
+                  Loading...
+                </div>
+              ) : (
+                saleDetails && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Tanggal & Waktu</p>
+                        <p className="font-medium">
+                          {formatDateTime(selectedTransaction.createdAt)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Kasir</p>
+                        <p className="font-medium">
+                          {selectedTransaction.user.name}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Pelanggan</p>
+                        <p className="font-medium">
+                          {selectedTransaction.customer}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          Metode Pembayaran
+                        </p>
+                        <p className="font-medium">
+                          {selectedTransaction.paymentMethod}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Kasir</p>
-                      <p className="font-medium">{selectedTransaction.kasir}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Pelanggan</p>
-                      <p className="font-medium">
-                        {selectedTransaction.customer}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Metode Pembayaran</p>
-                      <p className="font-medium">
-                        {selectedTransaction.payment}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="mt-6">
-                    <p className="font-medium mb-2">Detail Item</p>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Produk</TableHead>
-                          <TableHead className="text-right">Qty</TableHead>
-                          <TableHead className="text-right">Harga</TableHead>
-                          <TableHead className="text-right">Total</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedTransaction.items.map((item, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{item.product}</TableCell>
-                            <TableCell className="text-right">
-                              {item.qty}
+                    <div className="mt-6">
+                      <p className="font-medium mb-2">Detail Item</p>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Produk</TableHead>
+                            <TableHead className="text-right">Qty</TableHead>
+                            <TableHead className="text-right">Harga</TableHead>
+                            <TableHead className="text-right">Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {saleDetails.map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{item.name}</TableCell>
+                              <TableCell className="text-right">
+                                {item.quantity}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatCurrency(item.price)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatCurrency(item.totalPrice)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell
+                              colSpan={3}
+                              className="text-right font-medium"
+                            >
+                              Total
                             </TableCell>
-                            <TableCell className="text-right">
-                              {formatCurrency(item.price)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {formatCurrency(item.total)}
+                            <TableCell className="text-right font-bold">
+                              {formatCurrency(selectedTransaction.totalAmount)}
                             </TableCell>
                           </TableRow>
-                        ))}
-                        <TableRow>
-                          <TableCell
-                            colSpan={3}
-                            className="text-right font-medium"
-                          >
-                            Total
-                          </TableCell>
-                          <TableCell className="text-right font-bold">
-                            {formatCurrency(selectedTransaction.total)}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
-                </div>
+                )
               )}
             </DialogContent>
           </Dialog>
