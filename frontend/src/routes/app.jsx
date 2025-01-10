@@ -3,6 +3,8 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+
+import Register from "@/pages/Register.jsx";
 import AuthGuard from "@/utils/AuthGurad.jsx";
 import RoleGuard from "@/utils/RoleGuard.jsx";
 import Landing from "@/pages/Landing.jsx";
@@ -25,6 +27,10 @@ export default function Router() {
       element: <Landing />,
     },
     {
+      path: "/register",
+      element: <Register />,
+    },
+    {
       path: "/user/login",
       element: <LoginUser />,
     },
@@ -37,7 +43,7 @@ export default function Router() {
       path: "/user/Transaksi",
       element: (
         <AuthGuard>
-          <RoleGuard allowedRoles={["USER", "ADMIN"]}>
+          <RoleGuard allowedRoles={["KASIR", "ADMIN"]}>
             <Transaksi />
           </RoleGuard>
         </AuthGuard>
@@ -47,7 +53,7 @@ export default function Router() {
       path: "/user/DataTransaksi",
       element: (
         <AuthGuard>
-          <RoleGuard allowedRoles={["USER", "ADMIN"]}>
+          <RoleGuard allowedRoles={["KASIR", "ADMIN"]}>
             <DataTransaksi />
           </RoleGuard>
         </AuthGuard>

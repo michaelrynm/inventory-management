@@ -66,7 +66,7 @@ export default function LoginAdmin() {
               <div className="flex flex-col gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-sm font-medium">
-                    Username
+                    Email
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
