@@ -97,6 +97,11 @@ exports.deleteSale = async (req, res) => {
     });
 
     if (checkExist) {
+      await prisma.saleDetail.deleteMany({
+        where: {
+          saleId: parseInt(id),
+        },
+      });
       await prisma.sale.delete({
         where: {
           id: parseInt(id),

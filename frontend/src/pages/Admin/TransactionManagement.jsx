@@ -21,6 +21,7 @@ import { Search } from "lucide-react";
 import { format } from "date-fns";
 import AdminLayout from "@/components/component/AdminLayout.jsx";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function TransactionManagement() {
   const [transactions, setTransactions] = useState([]);
@@ -31,17 +32,16 @@ export default function TransactionManagement() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const fetchTransactions = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/sales/admin");
+      setTransactions(response.data);
+    } catch (error) {
+      console.log("Error fetching transactions:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/sales/admin"
-        );
-        setTransactions(response.data);
-      } catch (error) {
-        console.log("Error fetching transactions:", error);
-      }
-    };
     fetchTransactions();
   }, []);
 
@@ -109,6 +109,29 @@ export default function TransactionManagement() {
     setIsDetailOpen(false);
     setSaleDetails(null);
     setSelectedTransaction(null);
+  };
+
+  const handleDeleteSales = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:3000/api/sales/${id}`
+      );
+      if (response.status === 200) {
+        Swal.fire({
+          icon: "success",
+          title: "Data Transaksi Berhasil Dihapus",
+        });
+        fetchTransactions();
+      }
+    } catch (error) {
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Data Transaksi Gagal Dihapus",
+        });
+      }
+      console.log(error);
+    }
   };
 
   // Get unique kasir names for dropdown options
@@ -197,13 +220,21 @@ export default function TransactionManagement() {
                           Completed
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-3">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewDetail(transaction)}
                         >
                           Detail
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteSales(transaction.id)}
+                          className="bg-red-500 text-white"
+                        >
+                          Delete
                         </Button>
                       </TableCell>
                     </TableRow>
