@@ -5,6 +5,7 @@ import Table from "@/components/component/Table.jsx";
 import { FileText, BarChart2 } from "lucide-react";
 import axios from "axios";
 import TransactionDetailModal from "./DetailTransactionModal.jsx";
+import { CSVDownload } from "react-csv";
 
 export default function DataTransaksi() {
   const id = sessionStorage.getItem("userId");
@@ -94,12 +95,11 @@ export default function DataTransaksi() {
       }
     };
     fetchTransactionData();
-  }, []); // Removed dataTransaksi from dependency array to prevent infinite loop
+  }, []);
 
   const handleViewDetail = (transaction) => {
-    // Implement your detail view logic herea
     console.log("Viewing detail for transaction:", transaction);
-    setSelectedTransaction(transaction); // Set data transaksi yang dipilih
+    setSelectedTransaction(transaction);
     setIsModalOpen(true);
   };
 

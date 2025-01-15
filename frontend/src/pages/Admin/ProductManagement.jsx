@@ -5,6 +5,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -21,10 +22,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Pencil, Trash } from "lucide-react";
+import { Search, Plus, Pencil, Trash, Download } from "lucide-react";
 import AdminLayout from "@/components/component/AdminLayout.jsx";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { CSVLink } from "react-csv";
 
 const API_URL = "http://localhost:3000/api/products";
 
@@ -283,6 +285,21 @@ export default function ProductManagement() {
                   </TableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <CSVLink
+                  data={filteredProducts}
+                  filename="Data Produk"
+                  target="_blank"
+                >
+                  <Button
+                    variant="outline"
+                    className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white mt-5"
+                  >
+                    <Download size={16} className="mr-2" />
+                    Export to CSV
+                  </Button>
+                </CSVLink>
+              </TableFooter>
             </Table>
           </CardContent>
         </Card>

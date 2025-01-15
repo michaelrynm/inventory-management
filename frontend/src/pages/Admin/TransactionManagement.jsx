@@ -5,6 +5,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -22,6 +23,8 @@ import { format } from "date-fns";
 import AdminLayout from "@/components/component/AdminLayout.jsx";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { CSVLink } from "react-csv";
+import { Download } from "lucide-react";
 
 export default function TransactionManagement() {
   const [transactions, setTransactions] = useState([]);
@@ -137,6 +140,17 @@ export default function TransactionManagement() {
   // Get unique kasir names for dropdown options
   const uniqueKasirs = [...new Set(transactions.map((t) => t.user.name))];
 
+  const csvData = filteredTransactions.map((item) => ({
+    id: item.id,
+    userId: item.userId,
+    customer: item.customer,
+    totalAmount: item.totalAmount,
+    paymentMethod: item.paymentMethod,
+    createdAt: item.createdAt,
+    userName: item.user.name, // Ambil langsung value name dari object user
+  }));
+
+
   return (
     <div>
       <AdminLayout>
@@ -247,6 +261,21 @@ export default function TransactionManagement() {
                     </TableRow>
                   )}
                 </TableBody>
+                <TableFooter>
+                  <CSVLink
+                    data={csvData}
+                    filename="Data Transaksi"
+                    target="_blank"
+                  >
+                    <Button
+                      variant="outline"
+                      className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white mt-5"
+                    >
+                      <Download size={16} className="mr-2" />
+                      Export to CSV
+                    </Button>
+                  </CSVLink>
+                </TableFooter>
               </Table>
             </CardContent>
           </Card>

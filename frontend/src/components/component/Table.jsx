@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { CSVDownload, CSVLink } from "react-csv";
 export default function Table({ data, columns }) {
   const [globalFilter, setGlobalFilter] = useState("");
   const table = useReactTable({
@@ -96,13 +97,15 @@ export default function Table({ data, columns }) {
         </div>
       </div>
       <div className="mt-4">
-        <Button
-          variant="outline"
-          className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
-        >
-          <Download size={16} className="mr-2" />
-          Export to CSV
-        </Button>
+        <CSVLink data={data} filename="Data Transaksi" target="_blank">
+          <Button
+            variant="outline"
+            className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
+          >
+            <Download size={16} className="mr-2" />
+            Export to CSV
+          </Button>
+        </CSVLink>
       </div>
     </div>
   );
