@@ -74,6 +74,11 @@ export default function AdminSidebar() {
     //   icon: Users,
     // },
     {
+      title: "Pengeluaran",
+      url: "/admin/expenses",
+      icon: FileText,
+    },
+    {
       title: "Laporan",
       url: "/admin/reports",
       icon: BarChart3,

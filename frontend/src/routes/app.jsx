@@ -20,6 +20,7 @@ import CustomerManagement from "@/pages/Admin/CustomerManagement.jsx";
 import ReportPage from "@/pages/Admin/LaporanPage.jsx";
 import NotificationPage from "@/pages/Admin/NotificationPage.jsx";
 import ManageUSer from "@/pages/Admin/AddUser.jsx";
+import Expenses from "@/pages/Admin/Expenses.jsx";
 export default function Router() {
   const router = createBrowserRouter([
     {
@@ -86,6 +87,16 @@ export default function Router() {
         <AuthGuard>
           <RoleGuard allowedRoles={["ADMIN"]}>
             <TransactionManagement />
+          </RoleGuard>
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/admin/expenses",
+      element: (
+        <AuthGuard>
+          <RoleGuard allowedRoles={["ADMIN"]}>
+            <Expenses />
           </RoleGuard>
         </AuthGuard>
       ),

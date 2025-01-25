@@ -52,6 +52,8 @@ const lowStockProducts = [
 ];
 
 export default function Dashboard() {
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -62,6 +64,36 @@ export default function Dashboard() {
 
   const [dashboardData, setDashboardData] = useState([]);
   const [lowStockData, setLowStockData] = useState([]);
+
+  useEffect(() => {
+    const fetchWeeklyData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/laporan/weekly-reports"
+        );
+        setWeeklyData(response.data); // Menggunakan data dari API
+      } catch (error) {
+        console.error("Error fetching weekly sales data:", error);
+      }
+    };
+
+    fetchWeeklyData();
+  }, []);
+
+  useEffect(() => {
+    const fetchMonthlyData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/laporan/monthly-comparison"
+        );
+        setMonthlyData(response.data); // Menggunakan data dari API
+      } catch (error) {
+        console.error("Error fetching monthly sales comparison data:", error);
+      }
+    };
+
+    fetchMonthlyData();
+  }, []);
 
   useEffect(() => {
     const fetchLowStockData = async () => {
@@ -93,7 +125,7 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  console.log("dashboard data", dashboardData)
+  console.log("dashboard data", dashboardData);
 
   return (
     <div>

@@ -14,14 +14,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(KASIR)
-  createdAt DateTime @default(now())
-
-  Sales Sale[]
+  role      Role      @default(KASIR)
+  createdAt DateTime  @default(now())
+  Expenses  Expense[]
+  Sales     Sale[]
 }
 
 model Product {
@@ -69,6 +69,17 @@ model SaleDetail {
 
   product Product @relation(fields: [productId], references: [id])
   sale    Sale    @relation(fields: [saleId], references: [id])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Float
+  date        DateTime
+  userId      Int
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 enum Role {
