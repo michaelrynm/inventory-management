@@ -31,10 +31,10 @@ export default function DataTransaksi() {
       },
       {
         header: "Tanggal",
-        accessorKey: "createdAt",
+        accessorKey: "date",
         cell: ({ row }) => (
           <span className="text-gray-600">
-            {new Date(row.original.createdAt).toLocaleDateString("id-ID", {
+            {new Date(row.original.date).toLocaleDateString("id-ID", {
               day: "numeric",
               month: "long",
               year: "numeric",

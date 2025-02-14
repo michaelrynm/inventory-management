@@ -13,6 +13,7 @@ import { LockKeyhole, User } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useState } from "react";
+import Table from "@/components/component/Table.jsx";
 
 export default function Register() {
   const navigate = useNavigate();

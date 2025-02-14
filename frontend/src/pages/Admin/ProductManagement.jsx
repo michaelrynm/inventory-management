@@ -159,6 +159,8 @@ export default function ProductManagement() {
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  console.log(filteredProducts);
+
   return (
     <AdminLayout>
       <div>
@@ -216,7 +218,7 @@ export default function ProductManagement() {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Daftar Produk</CardTitle>
+              <CardTitle className="text-red-800">Daftar Produk</CardTitle>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -233,11 +235,13 @@ export default function ProductManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nama</TableHead>
+                  <TableHead>Merk</TableHead>
                   <TableHead>Deskripsi</TableHead>
                   <TableHead>Kategori</TableHead>
                   <TableHead>Harga</TableHead>
                   <TableHead>Stok</TableHead>
                   <TableHead>Satuan</TableHead>
+                  <TableHead>Min Stock</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
@@ -251,6 +255,7 @@ export default function ProductManagement() {
                     <TableCell>{formatCurrency(product.price)}</TableCell>
                     <TableCell>{product.stock}</TableCell>
                     <TableCell>{product.unit}</TableCell>
+                    <TableCell>{product.minStock}</TableCell>
                     <TableCell>
                       <Badge
                         variant={

@@ -150,7 +150,6 @@ export default function TransactionManagement() {
     userName: item.user.name, // Ambil langsung value name dari object user
   }));
 
-
   return (
     <div>
       <AdminLayout>

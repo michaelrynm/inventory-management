@@ -113,9 +113,9 @@ export default function UserSidebar() {
                               }`}
                             />
                           </div>
-                          <p className="text-sm text-gray-500 mt-0.5">
+                          {/* <p className="text-sm text-gray-500 mt-0.5">
                             {item.description}
-                          </p>
+                          </p> */}
                         </div>
                       </Link>
                     </SidebarMenuButton>

@@ -43,7 +43,7 @@ export default function Transaksi() {
     customer: "",
     paymentMethod: "",
     cashier: "John Doe",
-    date: new Date().toLocaleDateString(),
+    date: "",
     transactionId: "TRX-" + Math.random().toString().slice(2, 11),
     userId: sessionStorage.getItem("userId"),
   });
@@ -61,7 +61,6 @@ export default function Transaksi() {
           `http://localhost:3000/api/users/${userId}`
         );
         setUserData(response.data);
-        console.log(userData);
       } catch (error) {
         console.log("Error fetch user Data");
       }
@@ -73,7 +72,6 @@ export default function Transaksi() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get("http://localhost:3000/api/products");
-        console.log("response api.", response.data);
         setProducts(response.data);
         setLoading(false);
       } catch (err) {
@@ -155,6 +153,7 @@ export default function Transaksi() {
       customer: "",
       paymentMethod: "",
       transactionId: "TRX-" + Math.random().toString().slice(2, 11),
+      date: "",
     });
   };
 
@@ -190,13 +189,49 @@ export default function Transaksi() {
     }
   };
 
-  const handleCancelTransaction = () => {
-    if (
-      window.confirm(
-        "Anda yakin ingin membatalkan transaksi ini? Semua data akan dihapus."
-      )
-    ) {
-      resetAllData();
+  const handleCancelTransaction = async () => {
+    if (!saleId) return;
+
+    const result = await Swal.fire({
+      title: "Batalkan Transaksi?",
+      text: "Apakah Anda yakin ingin membatalkan transaksi ini? Data yang sudah dimasukkan akan dihapus.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, Batalkan!",
+      cancelButtonText: "Tidak",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Menghapus transaksi...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+        await axios.delete(`http://localhost:3000/api/sales/${saleId}`);
+
+        // Reset state setelah transaksi dibatalkan
+        resetAllData();
+
+        Swal.fire({
+          icon: "success",
+          title: "Transaksi Dibatalkan",
+          text: "Transaksi telah berhasil dibatalkan.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Error cancelling transaction:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Gagal Membatalkan Transaksi",
+          text: "Terjadi kesalahan saat menghapus transaksi.",
+        });
+      }
     }
   };
 
@@ -204,10 +239,12 @@ export default function Transaksi() {
     e.preventDefault();
     if (formData.customer && formData.paymentMethod) {
       try {
+        const parsedDate = new Date(formData.date).toISOString();
         const response = await axios.post("http://localhost:3000/api/sales/", {
           userId: formData.userId,
           customer: formData.customer,
           paymentMethod: formData.paymentMethod,
+          date: parsedDate,
         });
 
         if (response.status === 201) {
@@ -462,10 +499,13 @@ export default function Transaksi() {
                 <div className="space-y-2">
                   <Label className="text-gray-700">Tanggal</Label>
                   <Input
-                    type="text"
+                    type="date"
                     value={formData.date}
-                    className="bg-gray-50"
-                    disabled
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
+                    className="focus:ring-2 focus:ring-blue-100"
+                    required
                   />
                 </div>
               </div>
