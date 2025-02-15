@@ -5,33 +5,61 @@ const prisma = new PrismaClient();
 // Controller to get chart data
 exports.getReportData = async (req, res) => {
   try {
-    // Get data for bar chart: Pendapatan (Sales) and Pengeluaran (Expenses)
+    const currentYear = new Date().getFullYear();
+    const startDate = new Date(currentYear, 0, 1); // January 1st of current year
+    const endDate = new Date(currentYear, 11, 31); // December 31st of current year
+
+    // Get sales data for current year
     const salesData = await prisma.sale.groupBy({
-      by: ["createdAt"],
+      by: ['createdAt'],
       _sum: {
         totalAmount: true,
       },
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
       orderBy: {
-        createdAt: "asc",
+        createdAt: 'asc',
       },
     });
 
+    // Get expenses data for current year
     const expensesData = await prisma.expense.groupBy({
-      by: ["date"],
+      by: ['date'],
       _sum: {
         amount: true,
       },
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
       orderBy: {
-        date: "asc",
+        date: 'asc',
       },
     });
 
-    // Format data for bar chart
-    const barChartLabels = salesData.map((data) =>
-      new Date(data.createdAt).toLocaleString("default", { month: "long" })
-    );
-    const barChartSales = salesData.map((data) => data._sum.totalAmount || 0);
-    const barChartExpenses = expensesData.map((data) => data._sum.amount || 0);
+    // Initialize monthly data arrays
+    const monthlyData = Array.from({ length: 12 }, () => ({
+      sales: 0,
+      expenses: 0,
+    }));
+
+    // Aggregate sales data by month
+    salesData.forEach((data) => {
+      const month = new Date(data.createdAt).getMonth();
+      monthlyData[month].sales += data._sum.totalAmount || 0;
+    });
+
+    // Aggregate expenses data by month
+    expensesData.forEach((data) => {
+      const month = new Date(data.date).getMonth();
+      monthlyData[month].expenses += data._sum.amount || 0;
+    });
 
     // Get data for pie chart: Distribution of product sales
     const productSales = await prisma.saleDetail.groupBy({
@@ -51,20 +79,23 @@ exports.getReportData = async (req, res) => {
     );
     const pieChartData = productSales.map((data) => data._sum.quantity || 0);
 
-    // Return formatted data
+    // Format all chart data
     res.json({
       barChartData: {
-        labels: barChartLabels,
+        labels: [
+          'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ],
         datasets: [
           {
-            label: "Pendapatan",
-            data: barChartSales,
-            backgroundColor: "rgba(75, 192, 192, 0.5)",
+            label: 'Pendapatan',
+            data: monthlyData.map(data => data.sales),
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
           },
           {
-            label: "Pengeluaran",
-            data: barChartExpenses,
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
+            label: 'Pengeluaran',
+            data: monthlyData.map(data => data.expenses),
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
           },
         ],
       },
@@ -77,6 +108,7 @@ exports.getReportData = async (req, res) => {
           },
         ],
       },
+      currentYear,
     });
   } catch (error) {
     console.error("Error fetching report data:", error);

@@ -219,9 +219,7 @@ export default function TransactionManagement() {
                   {filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>{transaction.id}</TableCell>
-                      <TableCell>
-                        {formatDateTime(transaction.createdAt)}
-                      </TableCell>
+                      <TableCell>{formatDateTime(transaction.date)}</TableCell>
                       <TableCell>{transaction.user.name}</TableCell>
                       <TableCell>{transaction.customer}</TableCell>
                       <TableCell>

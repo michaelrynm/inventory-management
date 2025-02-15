@@ -54,8 +54,55 @@ export default function ReportPage() {
     fetchReportData();
   }, []);
 
-  // Chart options
-  const getChartOptions = (id) => ({
+  // Bar Chart options with currency formatting
+  const barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+              }).format(context.parsed.y);
+            }
+            return label;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function (value) {
+            return new Intl.NumberFormat("id-ID", {
+              style: "currency",
+              currency: "IDR",
+              maximumSignificantDigits: 3,
+            }).format(value);
+          },
+        },
+      },
+    },
+  };
+
+  // Pie Chart options
+  const pieChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -66,8 +113,7 @@ export default function ReportPage() {
         display: false,
       },
     },
-    id: id,
-  });
+  };
 
   if (loading) {
     return (
@@ -84,18 +130,17 @@ export default function ReportPage() {
           <h1 className="text-2xl font-bold">Dashboard Laporan</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="">
           {/* Bar Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Perbandingan Pendapatan dan Pengeluaran</CardTitle>
+              <CardTitle>
+                Perbandingan Pendapatan dan Pengeluaran Bulanan
+              </CardTitle>
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-96">
               {barChartData ? (
-                <Bar
-                  data={barChartData}
-                  options={getChartOptions("bar-chart")}
-                />
+                <Bar data={barChartData} options={barChartOptions} />
               ) : (
                 <div className="text-center">No data available</div>
               )}
@@ -103,21 +148,20 @@ export default function ReportPage() {
           </Card>
 
           {/* Pie Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribusi Penjualan Produk</CardTitle>
-            </CardHeader>
-            <CardContent className="h-80">
-              {pieChartData ? (
-                <Pie
-                  data={pieChartData}
-                  options={getChartOptions("pie-chart")}
-                />
-              ) : (
-                <div className="text-center">No data available</div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="mt-5">
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribusi Penjualan Produk</CardTitle>
+              </CardHeader>
+              <CardContent className="h-96">
+                {pieChartData ? (
+                  <Pie data={pieChartData} options={pieChartOptions} />
+                ) : (
+                  <div className="text-center">No data available</div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </AdminLayout>
