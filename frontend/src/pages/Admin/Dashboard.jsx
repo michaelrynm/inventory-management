@@ -71,7 +71,13 @@ export default function Dashboard() {
         const response = await axios.get(
           "http://localhost:3000/api/laporan/weekly-reports"
         );
-        setWeeklyData(response.data); // Menggunakan data dari API
+
+        const formattedData = response.data.data.map((item) => ({
+          name: item.day,
+          penjualan: item.totalSales,
+        }));
+
+        setWeeklyData(formattedData);
       } catch (error) {
         console.error("Error fetching weekly sales data:", error);
       }
@@ -86,7 +92,7 @@ export default function Dashboard() {
         const response = await axios.get(
           "http://localhost:3000/api/laporan/monthly-comparison"
         );
-        setMonthlyData(response.data); // Menggunakan data dari API
+        setMonthlyData(response.data);
       } catch (error) {
         console.error("Error fetching monthly sales comparison data:", error);
       }

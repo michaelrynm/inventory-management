@@ -1,17 +1,16 @@
 const { PrismaClient } = require("@prisma/client");
-
+const { subDays, startOfDay, endOfDay } = require("date-fns");
 const prisma = new PrismaClient();
 
 // Controller to get chart data
 exports.getReportData = async (req, res) => {
   try {
     const currentYear = new Date().getFullYear();
-    const startDate = new Date(currentYear, 0, 1); // January 1st of current year
-    const endDate = new Date(currentYear, 11, 31); // December 31st of current year
+    const startDate = new Date(currentYear, 0, 1);
+    const endDate = new Date(currentYear, 11, 31);
 
-    // Get sales data for current year
     const salesData = await prisma.sale.groupBy({
-      by: ['createdAt'],
+      by: ["createdAt"],
       _sum: {
         totalAmount: true,
       },
@@ -22,13 +21,13 @@ exports.getReportData = async (req, res) => {
         },
       },
       orderBy: {
-        createdAt: 'asc',
+        createdAt: "asc",
       },
     });
 
     // Get expenses data for current year
     const expensesData = await prisma.expense.groupBy({
-      by: ['date'],
+      by: ["date"],
       _sum: {
         amount: true,
       },
@@ -39,7 +38,7 @@ exports.getReportData = async (req, res) => {
         },
       },
       orderBy: {
-        date: 'asc',
+        date: "asc",
       },
     });
 
@@ -83,19 +82,29 @@ exports.getReportData = async (req, res) => {
     res.json({
       barChartData: {
         labels: [
-          'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+          "Januari",
+          "Februari",
+          "Maret",
+          "April",
+          "Mei",
+          "Juni",
+          "Juli",
+          "Agustus",
+          "September",
+          "Oktober",
+          "November",
+          "Desember",
         ],
         datasets: [
           {
-            label: 'Pendapatan',
-            data: monthlyData.map(data => data.sales),
-            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            label: "Pendapatan",
+            data: monthlyData.map((data) => data.sales),
+            backgroundColor: "rgba(75, 192, 192, 0.5)",
           },
           {
-            label: 'Pengeluaran',
-            data: monthlyData.map(data => data.expenses),
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            label: "Pengeluaran",
+            data: monthlyData.map((data) => data.expenses),
+            backgroundColor: "rgba(255, 99, 132, 0.5)",
           },
         ],
       },
@@ -117,41 +126,56 @@ exports.getReportData = async (req, res) => {
 };
 
 exports.getWeeklySalesData = async (req, res) => {
+  const dayOrder = [
+    "Senin",
+    "Selasa",
+    "Rabu",
+    "Kamis",
+    "Jumat",
+    "Sabtu",
+    "Minggu",
+  ];
   try {
     const today = new Date();
-    const startOfWeek = new Date(
-      today.setDate(today.getDate() - today.getDay() + 1)
-    ); // Monday
-    const endOfWeek = new Date(today.setDate(startOfWeek.getDate() + 6)); // Sunday
+    let weeklySales = [];
 
-    const sales = await prisma.sale.findMany({
-      where: {
-        createdAt: {
-          gte: startOfWeek,
-          lte: endOfWeek,
+    // Ambil data selama 7 hari terakhir
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(today, i);
+      const start = startOfDay(date);
+      const end = endOfDay(date);
+
+      // Ambil total penjualan untuk hari tersebut
+      const sales = await prisma.sale.aggregate({
+        _sum: {
+          totalAmount: true,
         },
-      },
+        where: {
+          date: {
+            gte: start,
+            lte: end,
+          },
+        },
+      });
+
+      // Dapatkan nama hari dalam bahasa Indonesia
+      const dayName = start.toLocaleDateString("id-ID", { weekday: "long" });
+
+      weeklySales.push({
+        day: dayName,
+        totalSales: sales._sum.totalAmount || 0,
+      });
+    }
+
+    // **Sort data berdasarkan urutan hari yang benar (mulai dari Senin)**
+    weeklySales.sort((a, b) => {
+      return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
     });
 
-    const weeklyData = [
-      { name: "Senin", penjualan: 0 },
-      { name: "Selasa", penjualan: 0 },
-      { name: "Rabu", penjualan: 0 },
-      { name: "Kamis", penjualan: 0 },
-      { name: "Jumat", penjualan: 0 },
-      { name: "Sabtu", penjualan: 0 },
-      { name: "Minggu", penjualan: 0 },
-    ];
-
-    sales.forEach((sale) => {
-      const day = new Date(sale.createdAt).getDay();
-      weeklyData[day - 1].penjualan += sale.totalAmount || 0;
-    });
-
-    res.status(200).json(weeklyData);
+    res.json({ success: true, data: weeklySales });
   } catch (error) {
-    console.error("Error fetching weekly sales data:", error);
-    res.status(500).json({ error: "Failed to fetch weekly sales data" });
+    console.error("Error fetching weekly sales:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
