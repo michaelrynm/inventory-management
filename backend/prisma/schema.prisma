@@ -74,8 +74,12 @@ model SaleDetail {
 
 model Expense {
   id          Int      @id @default(autoincrement())
+  name        String
   description String
-  amount      Float
+  supplier    String
+  amount      Int
+  unit        String
+  price       Float
   date        DateTime
   userId      Int
   createdAt   DateTime @default(now())

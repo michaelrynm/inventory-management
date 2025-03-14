@@ -3,13 +3,17 @@ const prisma = new PrismaClient();
 
 exports.createExpense = async (req, res) => {
   try {
-    const { description, amount, date } = req.body;
+    const { name, description, supplier, amount, unit, price, date } = req.body;
     const userId = req.body.userId; // Assuming you have authentication middleware
 
     const expense = await prisma.expense.create({
       data: {
+        name,
         description,
-        amount: parseFloat(amount),
+        supplier,
+        amount: parseInt(amount),
+        unit,
+        price: parseFloat(price),
         date: new Date(date),
         userId,
       },

@@ -21,10 +21,15 @@ import ReportPage from "@/pages/Admin/LaporanPage.jsx";
 import NotificationPage from "@/pages/Admin/NotificationPage.jsx";
 import ManageUSer from "@/pages/Admin/AddUser.jsx";
 import Expenses from "@/pages/Admin/Expenses.jsx";
+import LandingPage from "@/pages/LandingPage.jsx";
 export default function Router() {
   const router = createBrowserRouter([
     {
       path: "/",
+      element: <LandingPage />,
+    },
+    {
+      path: "/landing",
       element: <Landing />,
     },
     {

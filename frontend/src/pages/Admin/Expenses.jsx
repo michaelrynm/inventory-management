@@ -41,8 +41,12 @@ export default function Expenses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newExpense, setNewExpense] = useState({
+    name: "",
     description: "",
+    supplier: "",
     amount: "",
+    unit: "",
+    price: "",
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -75,8 +79,12 @@ export default function Expenses() {
     const userId = sessionStorage.getItem("userId");
     try {
       await axios.post(API_URL, {
+        name: newExpense.name,
         description: newExpense.description,
-        amount: parseFloat(newExpense.amount),
+        supplier: newExpense.supplier,
+        amount: parseInt(newExpense.amount),
+        unit: newExpense.unit,
+        price: parseFloat(newExpense.price),
         date: newExpense.date,
         userId: parseInt(userId),
       });
@@ -88,6 +96,7 @@ export default function Expenses() {
       console.error("Error saving expense:", error);
       Swal.fire("Error", "Gagal menyimpan pengeluaran", "error");
     }
+    console.log(newExpense);
   };
 
   // Handle delete expense
@@ -148,7 +157,20 @@ export default function Expenses() {
                   Masukkan informasi pengeluaran di bawah ini.
                 </DialogDescription>
               </DialogHeader>
+
               <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Nama
+                  </Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={newExpense.name}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
+                </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="description" className="text-right">
                     Deskripsi
@@ -157,6 +179,18 @@ export default function Expenses() {
                     id="description"
                     name="description"
                     value={newExpense.description}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="supplier" className="text-right">
+                    Supplier
+                  </Label>
+                  <Input
+                    id="supplier"
+                    name="supplier"
+                    value={newExpense.supplier}
                     onChange={handleInputChange}
                     className="col-span-3"
                   />
@@ -172,6 +206,31 @@ export default function Expenses() {
                     value={newExpense.amount}
                     onChange={handleInputChange}
                     className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="unit" className="text-right">
+                    Satuan
+                  </Label>
+                  <Input
+                    id="unit"
+                    name="unit"
+                    value={newExpense.unit}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="price" className="text-right">
+                    Price
+                  </Label>
+                  <Input
+                    id="price"
+                    name="price"
+                    value={newExpense.price}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                    type="number"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -218,8 +277,12 @@ export default function Expenses() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Nama</TableHead>
                   <TableHead>Deskripsi</TableHead>
+                  <TableHead>Supplier</TableHead>
                   <TableHead>Jumlah</TableHead>
+                  <TableHead>Satuan</TableHead>
+                  <TableHead>Harga</TableHead>
                   <TableHead>Tanggal</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
@@ -227,8 +290,12 @@ export default function Expenses() {
               <TableBody>
                 {filteredExpenses.map((expense) => (
                   <TableRow key={expense.id}>
+                    <TableCell>{expense.name}</TableCell>
                     <TableCell>{expense.description}</TableCell>
-                    <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                    <TableCell>{expense.supplier}</TableCell>
+                    <TableCell>{expense.amount}</TableCell>
+                    <TableCell>{expense.unit}</TableCell>
+                    <TableCell>{formatCurrency(expense.price)}</TableCell>
                     <TableCell>
                       {new Date(expense.date).toLocaleDateString()}
                     </TableCell>
