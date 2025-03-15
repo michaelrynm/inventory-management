@@ -45,6 +45,7 @@ export default function ProductManagement() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [newProduct, setNewProduct] = useState({
     name: "",
+    brand: "",
     description: "",
     category: "",
     price: "",
@@ -52,6 +53,7 @@ export default function ProductManagement() {
     minStock: "",
     unit: "",
   });
+  console.log(products);
 
   // Fetch products
   const fetchProducts = async () => {
@@ -147,6 +149,7 @@ export default function ProductManagement() {
     setNewProduct({
       name: "",
       description: "",
+      brand: "",
       category: "",
       price: "",
       stock: "",
@@ -184,7 +187,7 @@ export default function ProductManagement() {
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 {Object.keys(newProduct)
-                  .filter((field) => !["id", "createdAt"].includes(field)) // Exclude fields
+                  .filter((field) => !["id", "createdAt"].includes(field))
                   .map((field) => (
                     <div
                       key={field}
@@ -234,6 +237,7 @@ export default function ProductManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>ID Product</TableHead>
                   <TableHead>Nama</TableHead>
                   <TableHead>Merk</TableHead>
                   <TableHead>Deskripsi</TableHead>
@@ -243,13 +247,15 @@ export default function ProductManagement() {
                   <TableHead>Satuan</TableHead>
                   <TableHead>Min Stock</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
+                  <TableHead className="">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProducts.map((product) => (
                   <TableRow key={product.id}>
+                    <TableCell>{product.id}</TableCell>
                     <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.brand}</TableCell>
                     <TableCell>{product.description}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>{formatCurrency(product.price)}</TableCell>
@@ -269,7 +275,7 @@ export default function ProductManagement() {
                           : "Stok Aman"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
+                    <TableCell className="space-x-3">
                       <Button
                         variant="outline"
                         size="sm"
