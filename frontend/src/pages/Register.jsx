@@ -62,8 +62,6 @@ export default function Register() {
         navigate("/"); // Redirect to login page after successful registration
       }
     } catch (error) {
-      console.error("Registration error:", error);
-
       let errorMessage = "Terjadi kesalahan saat registrasi";
       if (error.response) {
         // Use error message from API if available
