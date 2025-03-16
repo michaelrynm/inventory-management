@@ -78,6 +78,7 @@ model Expense {
   amount      Int
   unit        String
   price       Float
+  totalPrice  Float
   date        DateTime
   userId      Int
   createdAt   DateTime @default(now())

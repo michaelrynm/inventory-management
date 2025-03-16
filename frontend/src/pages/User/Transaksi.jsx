@@ -118,7 +118,7 @@ export default function Transaksi() {
           "http://localhost:3000/api/sale-details",
           {
             saleId: parseInt(saleId),
-            productId: parseInt(selectedProduct.id),
+            productId: selectedProduct.id,
             quantity: parseInt(quantity),
           }
         );
@@ -364,8 +364,6 @@ export default function Transaksi() {
       totalAmount: calculateTotal(),
     };
 
-    console.log("Final transaction data:", finalTransaction);
-
     try {
       // Kirim data transaksi ke API
       const response = await axios.put("http://localhost:3000/api/sales/", {
@@ -552,13 +550,11 @@ export default function Transaksi() {
                   <div className="space-y-2">
                     <Label className="text-gray-700">Produk</Label>
                     <Select
-                      value={selectedProduct?.id?.toString() || ""}
+                      value={selectedProduct?.id || ""}
                       onValueChange={(id) => {
                         if (["loading", "error", "empty"].includes(id)) return;
 
-                        const selected = products.find(
-                          (p) => p.id === parseInt(id)
-                        );
+                        const selected = products.find((p) => p.id === id);
                         if (selected) {
                           setSelectedProduct(selected);
                         } else {

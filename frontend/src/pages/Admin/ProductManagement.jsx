@@ -242,7 +242,7 @@ export default function ProductManagement() {
                   <TableHead>Merk</TableHead>
                   <TableHead>Deskripsi</TableHead>
                   <TableHead>Kategori</TableHead>
-                  <TableHead>Harga</TableHead>
+                  <TableHead>Harga/Pcs</TableHead>
                   <TableHead>Stok</TableHead>
                   <TableHead>Satuan</TableHead>
                   <TableHead>Min Stock</TableHead>

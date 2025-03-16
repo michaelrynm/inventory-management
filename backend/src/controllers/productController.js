@@ -42,7 +42,7 @@ exports.create = async (req, res) => {
     const data = {
       id,
       name,
-	  brand,
+      brand,
       description,
       category,
       price,

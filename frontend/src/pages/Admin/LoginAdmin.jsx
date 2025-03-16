@@ -9,10 +9,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
-import { LockKeyhole, User } from "lucide-react";
+import { LockKeyhole, User, ChevronLeft } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function LoginAdmin() {
   const [username, setUsername] = useState("");
@@ -53,6 +54,13 @@ export default function LoginAdmin() {
               <div className="p-3 rounded-full bg-blue-100">
                 <User size={32} className="text-blue-600" />
               </div>
+            </div>
+            <div className="absolute">
+              <Link to={"/"}>
+                <Button variant="outline">
+                  <ChevronLeft />
+                </Button>
+              </Link>
             </div>
             <CardTitle className="text-2xl text-center font-bold">
               Login Admin

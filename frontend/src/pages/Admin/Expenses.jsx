@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, Trash, Download } from "lucide-react";
+import { Search, Plus, Trash, Download, Pencil } from "lucide-react";
 import AdminLayout from "@/components/component/AdminLayout.jsx";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -40,6 +40,7 @@ export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newExpense, setNewExpense] = useState({
     name: "",
     description: "",
@@ -47,6 +48,18 @@ export default function Expenses() {
     amount: "",
     unit: "",
     price: "",
+    totalPrice: "",
+    date: new Date().toISOString().split("T")[0],
+  });
+  const [editExpense, setEditExpense] = useState({
+    id: "",
+    name: "",
+    description: "",
+    supplier: "",
+    amount: "",
+    unit: "",
+    price: "",
+    totalPrice: "",
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -65,10 +78,35 @@ export default function Expenses() {
     fetchExpenses();
   }, []);
 
-  // Handle form input change
+  useEffect(() => {
+    const amount = parseFloat(newExpense.amount) || 0;
+    const price = parseFloat(newExpense.price) || 0;
+    setNewExpense((prev) => ({
+      ...prev,
+      totalPrice: amount * price,
+    }));
+  }, [newExpense.amount, newExpense.price]);
+
+  useEffect(() => {
+    const amount = parseFloat(editExpense.amount) || 0;
+    const price = parseFloat(editExpense.price) || 0;
+    setEditExpense((prev) => ({
+      ...prev,
+      totalPrice: amount * price,
+    }));
+  }, [editExpense.amount, editExpense.price]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewExpense((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditExpense((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -85,6 +123,7 @@ export default function Expenses() {
         amount: parseInt(newExpense.amount),
         unit: newExpense.unit,
         price: parseFloat(newExpense.price),
+        totalPrice: parseFloat(newExpense.totalPrice),
         date: newExpense.date,
         userId: parseInt(userId),
       });
@@ -97,6 +136,47 @@ export default function Expenses() {
       Swal.fire("Error", "Gagal menyimpan pengeluaran", "error");
     }
     console.log(newExpense);
+  };
+
+  // Handle update expense
+  const handleUpdateExpense = async () => {
+    const userId = sessionStorage.getItem("userId");
+    try {
+      await axios.put(`${API_URL}/${editExpense.id}`, {
+        name: editExpense.name,
+        description: editExpense.description,
+        supplier: editExpense.supplier,
+        amount: parseInt(editExpense.amount),
+        unit: editExpense.unit,
+        price: parseFloat(editExpense.price),
+        totalPrice: parseFloat(editExpense.totalPrice),
+        date: editExpense.date,
+        userId: parseInt(userId),
+      });
+
+      Swal.fire("Berhasil", "Pengeluaran berhasil diperbarui", "success");
+      fetchExpenses();
+      handleCloseEditDialog();
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      Swal.fire("Error", "Gagal memperbarui pengeluaran", "error");
+    }
+  };
+
+  // Handle open edit dialog
+  const handleOpenEditDialog = (expense) => {
+    setEditExpense({
+      id: expense.id,
+      name: expense.name,
+      description: expense.description,
+      supplier: expense.supplier,
+      amount: expense.amount,
+      unit: expense.unit,
+      price: expense.price,
+      totalPrice: expense.totalPrice,
+      date: new Date(expense.date).toISOString().split("T")[0],
+    });
+    setIsEditDialogOpen(true);
   };
 
   // Handle delete expense
@@ -128,8 +208,29 @@ export default function Expenses() {
   const handleCloseDialog = () => {
     setIsAddDialogOpen(false);
     setNewExpense({
+      name: "",
       description: "",
+      supplier: "",
       amount: "",
+      unit: "",
+      price: "",
+      totalPrice: "",
+      date: new Date().toISOString().split("T")[0],
+    });
+  };
+
+  // Handle edit dialog close
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditExpense({
+      id: "",
+      name: "",
+      description: "",
+      supplier: "",
+      amount: "",
+      unit: "",
+      price: "",
+      totalPrice: "",
       date: new Date().toISOString().split("T")[0],
     });
   };
@@ -222,12 +323,25 @@ export default function Expenses() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="price" className="text-right">
-                    Price
+                    Harga/Pcs
                   </Label>
                   <Input
                     id="price"
                     name="price"
                     value={newExpense.price}
+                    onChange={handleInputChange}
+                    className="col-span-3"
+                    type="number"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="totalPrice" className="text-right">
+                    Total
+                  </Label>
+                  <Input
+                    id="totalPrice"
+                    name="totalPrice"
+                    value={newExpense.totalPrice}
                     onChange={handleInputChange}
                     className="col-span-3"
                     type="number"
@@ -253,6 +367,128 @@ export default function Expenses() {
                   Batal
                 </Button>
                 <Button onClick={handleSaveExpense}>Simpan</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Pengeluaran</DialogTitle>
+                <DialogDescription>
+                  Ubah informasi pengeluaran di bawah ini.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-name" className="text-right">
+                    Nama
+                  </Label>
+                  <Input
+                    id="edit-name"
+                    name="name"
+                    value={editExpense.name}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-description" className="text-right">
+                    Deskripsi
+                  </Label>
+                  <Input
+                    id="edit-description"
+                    name="description"
+                    value={editExpense.description}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-supplier" className="text-right">
+                    Supplier
+                  </Label>
+                  <Input
+                    id="edit-supplier"
+                    name="supplier"
+                    value={editExpense.supplier}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-amount" className="text-right">
+                    Jumlah
+                  </Label>
+                  <Input
+                    id="edit-amount"
+                    name="amount"
+                    type="number"
+                    value={editExpense.amount}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-unit" className="text-right">
+                    Satuan
+                  </Label>
+                  <Input
+                    id="edit-unit"
+                    name="unit"
+                    value={editExpense.unit}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-price" className="text-right">
+                    Harga/Pcs
+                  </Label>
+                  <Input
+                    id="edit-price"
+                    name="price"
+                    value={editExpense.price}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                    type="number"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-totalPrice" className="text-right">
+                    Total
+                  </Label>
+                  <Input
+                    id="edit-totalPrice"
+                    name="totalPrice"
+                    value={editExpense.totalPrice}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                    type="number"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="edit-date" className="text-right">
+                    Tanggal
+                  </Label>
+                  <Input
+                    id="edit-date"
+                    name="date"
+                    type="date"
+                    value={editExpense.date}
+                    onChange={handleEditInputChange}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCloseEditDialog}>
+                  Batal
+                </Button>
+                <Button onClick={handleUpdateExpense}>Simpan Perubahan</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -282,7 +518,8 @@ export default function Expenses() {
                   <TableHead>Supplier</TableHead>
                   <TableHead>Jumlah</TableHead>
                   <TableHead>Satuan</TableHead>
-                  <TableHead>Harga</TableHead>
+                  <TableHead>Harga/Pcs</TableHead>
+                  <TableHead>Total</TableHead>
                   <TableHead>Tanggal</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
@@ -296,10 +533,19 @@ export default function Expenses() {
                     <TableCell>{expense.amount}</TableCell>
                     <TableCell>{expense.unit}</TableCell>
                     <TableCell>{formatCurrency(expense.price)}</TableCell>
+                    <TableCell>{formatCurrency(expense.totalPrice)}</TableCell>
                     <TableCell>
                       {new Date(expense.date).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenEditDialog(expense)}
+                      >
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
                       <Button
                         variant="destructive"
                         size="sm"
