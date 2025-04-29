@@ -24,7 +24,7 @@ export default function LoginAdmin() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        "https://inventory-management-orpin-six.vercel.app/api/auth/login",
         {
           email: username,
           password,
@@ -112,6 +112,13 @@ export default function LoginAdmin() {
                 </Button>
               </div>
             </form>
+            <div className="mt-3">
+              <Link to={"/register"}>
+                <Button className="w-full bg-blue-800 hover:bg-blue-700 text-white transition-colors">
+                  Daftar
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

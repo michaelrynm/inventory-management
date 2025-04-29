@@ -58,7 +58,7 @@ export default function Transaksi() {
       try {
         const userId = sessionStorage.getItem("userId");
         const response = await axios.get(
-          `http://localhost:3000/api/users/${userId}`
+          `https://inventory-management-orpin-six.vercel.app/api/users/${userId}`
         );
         setUserData(response.data);
       } catch (error) {
@@ -71,7 +71,9 @@ export default function Transaksi() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/products");
+        const response = await axios.get(
+          "https://inventory-management-orpin-six.vercel.app/api/products"
+        );
         setProducts(response.data);
         setLoading(false);
       } catch (err) {
@@ -90,7 +92,7 @@ export default function Transaksi() {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/sale-details/${saleId}`
+          `https://inventory-management-orpin-six.vercel.app/api/sale-details/${saleId}`
         );
         setSaleDetails(
           response.data.map((detail) => ({
@@ -115,7 +117,7 @@ export default function Transaksi() {
     if (selectedProduct && quantity && saleId) {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/sale-details",
+          "https://inventory-management-orpin-six.vercel.app/api/sale-details",
           {
             saleId: parseInt(saleId),
             productId: selectedProduct.id,
@@ -125,7 +127,7 @@ export default function Transaksi() {
 
         if (response.status === 201) {
           const updatedDetailsResponse = await axios.get(
-            `http://localhost:3000/api/sale-details/${saleId}`
+            `https://inventory-management-orpin-six.vercel.app/api/sale-details/${saleId}`
           );
 
           setSaleDetails(
@@ -212,7 +214,9 @@ export default function Transaksi() {
             Swal.showLoading();
           },
         });
-        await axios.delete(`http://localhost:3000/api/sales/${saleId}`);
+        await axios.delete(
+          `https://inventory-management-orpin-six.vercel.app/api/sales/${saleId}`
+        );
 
         // Reset state setelah transaksi dibatalkan
         resetAllData();
@@ -240,12 +244,15 @@ export default function Transaksi() {
     if (formData.customer && formData.paymentMethod) {
       try {
         const parsedDate = new Date(formData.date).toISOString();
-        const response = await axios.post("http://localhost:3000/api/sales/", {
-          userId: formData.userId,
-          customer: formData.customer,
-          paymentMethod: formData.paymentMethod,
-          date: parsedDate,
-        });
+        const response = await axios.post(
+          "https://inventory-management-orpin-six.vercel.app/api/sales/",
+          {
+            userId: formData.userId,
+            customer: formData.customer,
+            paymentMethod: formData.paymentMethod,
+            date: parsedDate,
+          }
+        );
 
         if (response.status === 201) {
           setSaleId(response.data.id);
@@ -294,13 +301,13 @@ export default function Transaksi() {
 
         // Send DELETE request to the API
         const deleteResponse = await axios.delete(
-          `http://localhost:3000/api/sale-details/${saleDetailId}`
+          `https://inventory-management-orpin-six.vercel.app/api/sale-details/${saleDetailId}`
         );
 
         if (deleteResponse.status === 200) {
           // Fetch updated sale details after successful deletion
           const updatedDetailsResponse = await axios.get(
-            `http://localhost:3000/api/sale-details/${saleId}`
+            `https://inventory-management-orpin-six.vercel.app/api/sale-details/${saleId}`
           );
 
           // Update the state with new data
@@ -366,9 +373,12 @@ export default function Transaksi() {
 
     try {
       // Kirim data transaksi ke API
-      const response = await axios.put("http://localhost:3000/api/sales/", {
-        saleId: parseInt(saleId),
-      });
+      const response = await axios.put(
+        "https://inventory-management-orpin-six.vercel.app/api/sales/",
+        {
+          saleId: parseInt(saleId),
+        }
+      );
 
       if (response.status === 200) {
         // Jika transaksi berhasil, tampilkan notifikasi sukses

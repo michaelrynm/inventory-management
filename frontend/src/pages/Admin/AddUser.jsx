@@ -86,7 +86,7 @@ const ManageUser = () => {
 
     if (validateForm()) {
       try {
-        const response = await axios.post("http://localhost:3000/api/users", formData);
+        const response = await axios.post("https://inventory-management-orpin-six.vercel.app/api/users", formData);
         Swal.fire({
           icon: 'success',
           title: 'Berhasil!',

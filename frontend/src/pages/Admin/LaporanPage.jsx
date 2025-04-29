@@ -38,7 +38,7 @@ export default function ReportPage() {
   useEffect(() => {
     const fetchReportData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/laporan");
+        const response = await axios.get("https://inventory-management-orpin-six.vercel.app/api/laporan");
         const data = response.data;
 
         // Set the chart data from API response

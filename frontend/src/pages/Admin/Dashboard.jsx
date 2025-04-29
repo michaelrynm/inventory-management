@@ -69,7 +69,7 @@ export default function Dashboard() {
     const fetchWeeklyData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/laporan/weekly-reports"
+          "https://inventory-management-orpin-six.vercel.app/api/laporan/weekly-reports"
         );
 
         const formattedData = response.data.data.map((item) => ({
@@ -90,7 +90,7 @@ export default function Dashboard() {
     const fetchMonthlyData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/laporan/monthly-comparison"
+          "https://inventory-management-orpin-six.vercel.app/api/laporan/monthly-comparison"
         );
         setMonthlyData(response.data);
       } catch (error) {
@@ -105,7 +105,7 @@ export default function Dashboard() {
     const fetchLowStockData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/dashboard/low-stock"
+          "https://inventory-management-orpin-six.vercel.app/api/dashboard/low-stock"
         );
         setLowStockData(response.data);
       } catch (error) {
@@ -120,7 +120,7 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/dashboard/summary"
+          "https://inventory-management-orpin-six.vercel.app/api/dashboard/summary"
         );
         setDashboardData(response.data);
       } catch (error) {

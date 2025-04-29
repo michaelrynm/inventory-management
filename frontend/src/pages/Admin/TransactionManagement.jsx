@@ -37,7 +37,9 @@ export default function TransactionManagement() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/sales/admin");
+      const response = await axios.get(
+        "https://inventory-management-orpin-six.vercel.app/api/sales/admin"
+      );
       setTransactions(response.data);
     } catch (error) {
       console.log("Error fetching transactions:", error);
@@ -84,7 +86,7 @@ export default function TransactionManagement() {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/sale-details/${saleId}`
+        `https://inventory-management-orpin-six.vercel.app/api/sale-details/${saleId}`
       );
       setSaleDetails(response.data);
     } catch (error) {
@@ -117,7 +119,7 @@ export default function TransactionManagement() {
   const handleDeleteSales = async (id) => {
     try {
       const response = await axios.delete(
-        `http://localhost:3000/api/sales/${id}`
+        `https://inventory-management-orpin-six.vercel.app/api/sales/${id}`
       );
       if (response.status === 200) {
         Swal.fire({

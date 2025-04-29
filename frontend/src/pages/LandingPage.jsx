@@ -22,6 +22,7 @@ import bimoliImage from "@/assets/bimoli.jpg";
 import indomieImage from "@/assets/download.jpg";
 import tepungImage from "@/assets/segitigabiru.jpg";
 import sunlightImage from "@/assets/sunlight.jpg";
+import tokoLionLogo from "@/assets/tokolionLogo.jpg";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -281,7 +282,7 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-center gap-10">
               <div className="md:w-1/2">
                 <img
-                  src="/api/placeholder/400/320"
+                  src={tokoLionLogo}
                   alt="Toko Lion"
                   className="rounded-lg shadow-lg w-full"
                 />
@@ -292,12 +293,12 @@ export default function LandingPage() {
                   Sejarah Toko Lion
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Toko Lion didirikan pada tahun 2010 dengan visi menyediakan
+                  Toko Lion didirikan pada tahun 2000 dengan visi menyediakan
                   kebutuhan sehari-hari dengan kualitas terbaik dan harga
                   terjangkau untuk masyarakat.
                 </p>
                 <p className="text-gray-600 mb-4">
-                  Dengan pengalaman lebih dari 15 tahun, kami selalu berkomitmen
+                  Dengan pengalaman lebih dari 25 tahun, kami selalu berkomitmen
                   untuk memberikan pelayanan prima dan produk berkualitas untuk
                   seluruh pelanggan setia kami.
                 </p>
@@ -305,7 +306,7 @@ export default function LandingPage() {
                   <div className="flex items-center gap-2">
                     <Package className="w-6 h-6 text-blue-500" />
                     <span className="text-gray-700 font-medium">
-                      5000+ Produk
+                      500+ Produk
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -337,8 +338,7 @@ export default function LandingPage() {
                 <Phone className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Telepon</h3>
-              <p className="text-gray-600">+62 123 4567 890</p>
-              <p className="text-gray-600">+62 098 7654 321</p>
+              <p className="text-gray-600">+62 895 3329 90750</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
@@ -346,8 +346,7 @@ export default function LandingPage() {
                 <Mail className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Email</h3>
-              <p className="text-gray-600">info@tokolion.com</p>
-              <p className="text-gray-600">cs@tokolion.com</p>
+              <p className="text-gray-600">cessywijaya@gmail.com</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
@@ -355,8 +354,8 @@ export default function LandingPage() {
                 <MapPin className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Alamat</h3>
-              <p className="text-gray-600">Jl. Raya Utama No. 123</p>
-              <p className="text-gray-600">Jakarta Selatan, Indonesia</p>
+              <p className="text-gray-600">Gang Kembang Sepatu</p>
+              <p className="text-gray-600">NO.26 RT010/RW010</p>
             </div>
           </div>
         </div>

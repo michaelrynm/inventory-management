@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const fetchLowStockProducts = async () => {
   try {
     const response = await fetch(
-      "http://localhost:3000/api/dashboard/low-stock"
+      "https://inventory-management-orpin-six.vercel.app/api/dashboard/low-stock"
     );
     const data = await response.json();
     return data;

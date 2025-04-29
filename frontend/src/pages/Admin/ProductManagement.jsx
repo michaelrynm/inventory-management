@@ -28,7 +28,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { CSVLink } from "react-csv";
 
-const API_URL = "http://localhost:3000/api/products";
+const API_URL = "https://inventory-management-orpin-six.vercel.app/api/products";
 
 export default function ProductManagement() {
   const formatCurrency = (value) => {

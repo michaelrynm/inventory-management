@@ -87,7 +87,7 @@ export default function DataTransaksi() {
     const fetchTransactionData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/sales/user/${id}`
+          `https://inventory-management-orpin-six.vercel.app/api/sales/user/${id}`
         );
         setDataTransaksi(response.data);
       } catch (error) {

@@ -24,7 +24,9 @@ export default function UserSidebar() {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/users/${id}`);
+      const response = await axios.get(
+        `https://inventory-management-orpin-six.vercel.app/api/users/${id}`
+      );
       setUserData(response.data);
     } catch (error) {
       console.log(error);

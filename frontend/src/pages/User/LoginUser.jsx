@@ -24,7 +24,7 @@ export default function LoginUser() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        "https://inventory-management-orpin-six.vercel.app/api/auth/login",
         {
           email: username,
           password,

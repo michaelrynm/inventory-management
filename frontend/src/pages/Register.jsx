@@ -9,11 +9,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
-import { LockKeyhole, User } from "lucide-react";
+import { LockKeyhole, User, ChevronLeft } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useState } from "react";
 import Table from "@/components/component/Table.jsx";
+import { Link } from "react-router-dom";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -46,12 +47,15 @@ export default function Register() {
     }
 
     try {
-      const response = await axios.post("http://localhost:3000/api/users/", {
-        name,
-        email,
-        password,
-        role: "ADMIN", // Role is always set to ADMIN
-      });
+      const response = await axios.post(
+        "https://inventory-management-orpin-six.vercel.app/api/users/",
+        {
+          name,
+          email,
+          password,
+          role: "ADMIN", // Role is always set to ADMIN
+        }
+      );
 
       if (response.data) {
         await Swal.fire({
@@ -85,6 +89,13 @@ export default function Register() {
               <div className="p-3 rounded-full bg-blue-100">
                 <User size={32} className="text-blue-600" />
               </div>
+            </div>
+            <div className="absolute">
+              <Link to={"/"}>
+                <Button variant="outline">
+                  <ChevronLeft />
+                </Button>
+              </Link>
             </div>
             <CardTitle className="text-2xl text-center font-bold">
               Register Akun Admin
